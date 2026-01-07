@@ -11,6 +11,8 @@ import LoginPage from './components/Login/Login';
 import BookingHistory from './components/bookingHistory/BookingHistory';
 import ManageBookings from './components/bookingHistory/BookingManagement'; 
 import IndustriesPage from './components/industries/Industries';
+import AdminBookingManager from './components/admin/bookingManagement/BookingMangement';
+import AdminFeedbackManager from './components/admin/adminFeedback/AdminFeedbackManager';
 
 
 function App() {
@@ -30,6 +32,8 @@ function App() {
             <Route path="/booking-history" element={<BookingHistory />} />
             <Route path="/manage-bookings" element={<ManageBookings />} />
             <Route path="/industries" element={<IndustriesPage />} />
+            <Route path="/admin/bookings" element={<AdminBookingManager />} />
+            <Route path="/admin/feedbacks" element={<AdminFeedbackManager />} />
 
           </Routes>
         </main>
