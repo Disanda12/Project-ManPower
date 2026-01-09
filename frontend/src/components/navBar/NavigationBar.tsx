@@ -51,10 +51,12 @@ const NavigationBar = () => {
   };
 
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
+  const [userRole, setUserRole] = useState(localStorage.getItem("role") || "");
 
   useEffect(() => {
     const checkAuth = () => {
-      setIsLoggedIn(!!localStorage.getItem("token")); // Changed from 'userToken'
+      setIsLoggedIn(!!localStorage.getItem("token"));
+      setUserRole(localStorage.getItem("role") || "");
     };
     window.addEventListener("storage", checkAuth);
     return () => window.removeEventListener("storage", checkAuth);
@@ -112,12 +114,30 @@ const NavigationBar = () => {
                       >
                         <div className="bg-white border border-gray-200 shadow-xl rounded-lg py-2">
                           <Link
-                            to="/booking-histor"
+                            to="/booking-history"
                             className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00467f] transition-colors"
                           >
                             <History size={16} />
                             <span>Order History</span>
                           </Link>
+                          {userRole === 'admin' && (
+                            <>
+                              <Link
+                                to="/admin/bookings"
+                                className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00467f] transition-colors"
+                              >
+                                <Settings size={16} />
+                                <span>Manage Bookings</span>
+                              </Link>
+                              <Link
+                                to="/admin/users"
+                                className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00467f] transition-colors"
+                              >
+                                <User size={16} />
+                                <span>User Management</span>
+                              </Link>
+                            </>
+                          )}
                           <Link
                             to="/settings"
                             className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00467f] transition-colors"
@@ -246,11 +266,27 @@ const NavigationBar = () => {
             </a>
             <div className="border-t border-gray-100 pt-4">
               <Link
-                to="/history"
+                to="/booking-history"
                 className="block text-gray-700 hover:text-[#00467f] font-medium py-2"
               >
                 Order History
               </Link>
+              {userRole === 'admin' && (
+                <>
+                  <Link
+                    to="/admin/bookings"
+                    className="block text-gray-700 hover:text-[#00467f] font-medium py-2"
+                  >
+                    Manage Bookings
+                  </Link>
+                  <Link
+                    to="/admin/users"
+                    className="block text-gray-700 hover:text-[#00467f] font-medium py-2"
+                  >
+                    User Management
+                  </Link>
+                </>
+              )}
 
               {/* UPDATED: Mobile Logout Button */}
               <button

@@ -7,3 +7,8 @@ export const AUTH_ENDPOINTS = {
     LOGOUT: `${BASE_URL}/auth/logout`,
 } as const; 
 
+export const USER_ENDPOINTS = {
+    GET_USERS: `${BASE_URL}/users`,
+    UPDATE_USER_ROLE: (id: string) => `${BASE_URL}/users/${id}/role`,
+    DELETE_USER: (id: string) => `${BASE_URL}/users/${id}`,
+} as const;

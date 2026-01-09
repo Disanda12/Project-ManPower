@@ -6,12 +6,14 @@ require('dotenv').config();
 const app = express();
 
 const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/users');
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 // TEST ROUTE: Get all services from your SQL table
 app.get('/api/services', async (req, res) => {
   try {

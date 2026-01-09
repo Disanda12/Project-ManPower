@@ -15,7 +15,7 @@ export const registerUser = async (userData: UserData): Promise<any> => {
     try {
         const finalData = { 
             ...userData, 
-            user_type: 'customer' 
+            user_type: userData.user_type || 'customer' 
         };
         console.log("user Data", userData)
         const response = await axios.post(AUTH_ENDPOINTS.SIGNUP, finalData);
