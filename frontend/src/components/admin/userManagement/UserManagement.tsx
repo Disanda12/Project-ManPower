@@ -34,7 +34,7 @@ const UserManagement: React.FC = () => {
     const fetchUsers = async () => {
         try {
             const userData = await getAllUsers();
-            setUsers(userData);
+            setUsers(userData.filter(user => user.user_type !== 'worker'));
         } catch (error) {
             notify.error('Failed to fetch users');
         } finally {
@@ -159,7 +159,6 @@ const UserManagement: React.FC = () => {
                         >
                             <option value="customer">Customer</option>
                             <option value="admin">Admin</option>
-                            <option value="worker">Worker</option>
                         </select>
                         <button
                             type="submit"
@@ -212,7 +211,6 @@ const UserManagement: React.FC = () => {
                                     >
                                         <option value="customer">Customer</option>
                                         <option value="admin">Admin</option>
-                                        <option value="worker">Worker</option>
                                     </select>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">

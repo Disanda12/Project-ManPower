@@ -27,6 +27,7 @@ const AdminBookingManager = () => {
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [selectedWorkers, setSelectedWorkers] = useState<number[]>([]);
   const [assigning, setAssigning] = useState(false);
+  const [activeTab, setActiveTab] = useState<'pending' | 'assigned'>('pending');
 
   useEffect(() => {
     fetchBookings();
@@ -36,11 +37,7 @@ const AdminBookingManager = () => {
   const fetchBookings = async () => {
     try {
       const bookingsData = await getAllBookings();
-      // Filter to show only pending bookings that need worker assignment
-      const pendingBookings = bookingsData.filter((booking: any) =>
-        booking.booking_status === 'pending' || booking.booking_status === 'confirmed'
-      );
-      setBookings(pendingBookings);
+      setBookings(bookingsData);
     } catch (error: any) {
       if (error.includes('Access denied') || error.includes('Invalid token') || error.includes('Admin access required')) {
         notify.error('You must be logged in as an admin to access this page');
@@ -136,6 +133,14 @@ const AdminBookingManager = () => {
 
   const stats = getStatusStats();
 
+  const filteredBookings = bookings.filter((booking: any) => {
+    if (activeTab === 'pending') {
+      return booking.booking_status === 'pending' || booking.booking_status === 'confirmed';
+    } else {
+      return booking.booking_status === 'assigned';
+    }
+  });
+
   return (
     <div className="min-h-screen bg-slate-50 pt-28 pb-20 px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
@@ -143,8 +148,15 @@ const AdminBookingManager = () => {
         {/* --- HEADER --- */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-extrabold text-slate-900">Worker Assignment</h1>
-            <p className="text-slate-500 mt-1">Assign workers to customer booking requests</p>
+            <h1 className="text-3xl font-extrabold text-slate-900">
+              {activeTab === 'pending' ? 'Worker Assignment' : 'Assigned Bookings'}
+            </h1>
+            <p className="text-slate-500 mt-1">
+              {activeTab === 'pending' 
+                ? 'Assign workers to customer booking requests' 
+                : 'View and manage assigned bookings with details'
+              }
+            </p>
           </div>
           <div className="flex gap-3">
             <button className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
@@ -154,11 +166,12 @@ const AdminBookingManager = () => {
         </div>
 
         {/* --- STATS CARDS --- */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
             {[
-                { label: 'Pending Assignments', value: stats.total.toString(), icon: ExternalLink, color: 'text-blue-600' },
+                { label: 'Total Bookings', value: stats.total.toString(), icon: ExternalLink, color: 'text-blue-600' },
                 { label: 'Awaiting Workers', value: stats.pending.toString(), icon: Clock, color: 'text-amber-500' },
                 { label: 'Ready to Assign', value: stats.confirmed.toString(), icon: CheckCircle, color: 'text-emerald-500' },
+                { label: 'Assigned', value: stats.assigned.toString(), icon: UserCheck, color: 'text-purple-600' },
                 { label: 'Total Workers', value: workers.length.toString(), icon: Users, color: 'text-indigo-600' },
             ].map((stat) => (
                 <div key={stat.label} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
@@ -171,6 +184,30 @@ const AdminBookingManager = () => {
                     </div>
                 </div>
             ))}
+        </div>
+
+        {/* --- TABS --- */}
+        <div className="flex gap-1 mb-6 bg-slate-100 p-1 rounded-xl w-fit">
+          <button
+            onClick={() => setActiveTab('pending')}
+            className={`px-6 py-2 rounded-lg font-bold text-sm transition-all ${
+              activeTab === 'pending'
+                ? 'bg-white text-slate-900 shadow-sm'
+                : 'text-slate-600 hover:text-slate-800'
+            }`}
+          >
+            Pending Assignments ({stats.pending + stats.confirmed})
+          </button>
+          <button
+            onClick={() => setActiveTab('assigned')}
+            className={`px-6 py-2 rounded-lg font-bold text-sm transition-all ${
+              activeTab === 'assigned'
+                ? 'bg-white text-slate-900 shadow-sm'
+                : 'text-slate-600 hover:text-slate-800'
+            }`}
+          >
+            Assigned Bookings ({stats.assigned})
+          </button>
         </div>
 
         {/* --- SEARCH & FILTER --- */}
@@ -198,7 +235,9 @@ const AdminBookingManager = () => {
                   <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Booking ID</th>
                   <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Customer</th>
                   <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Service</th>
-                  <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Required Workers</th>
+                  <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-widest">
+                    {activeTab === 'pending' ? 'Required Workers' : 'Assigned Workers'}
+                  </th>
                   <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Status</th>
                   <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right">Actions</th>
                 </tr>
@@ -213,18 +252,25 @@ const AdminBookingManager = () => {
                       </div>
                     </td>
                   </tr>
-                ) : bookings.length === 0 ? (
+                ) : filteredBookings.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="p-8 text-center">
                       <div className="text-slate-400">
                         <Users size={48} className="mx-auto mb-4 opacity-50" />
-                        <p className="text-lg font-medium">No pending bookings</p>
-                        <p className="text-sm">Waiting for customer bookings to assign workers</p>
+                        <p className="text-lg font-medium">
+                          {activeTab === 'pending' ? 'No pending bookings' : 'No assigned bookings'}
+                        </p>
+                        <p className="text-sm">
+                          {activeTab === 'pending' 
+                            ? 'Waiting for customer bookings to assign workers' 
+                            : 'No bookings have been assigned yet'
+                          }
+                        </p>
                       </div>
                     </td>
                   </tr>
                 ) : (
-                  bookings.map((booking, index) => (
+                  filteredBookings.map((booking, index) => (
                     <motion.tr 
                       key={booking.booking_id || booking.id || `booking-${index}`}
                       initial={{ opacity: 0 }}
@@ -246,11 +292,20 @@ const AdminBookingManager = () => {
                         <td className="p-4">
                           <span className="bg-slate-100 px-2 py-1 rounded text-xs font-bold text-slate-600">
                             {booking.worker_count || booking.number_of_workers || booking.requiredWorkers || 0} Workers
-                          </span>                          {booking.assigned_workers && (
+                          </span>
+                          {booking.assigned_workers && booking.booking_status === 'assigned' && (
                             <div className="mt-1 text-xs text-slate-500">
-                              Assigned: {booking.assigned_workers}
+                              <div className="font-medium">Assigned Workers:</div>
+                              <div className="mt-1">
+                                {booking.assigned_workers.split(',').map((worker: string, idx: number) => (
+                                  <span key={idx} className="inline-block bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs mr-1 mb-1">
+                                    {worker.trim()}
+                                  </span>
+                                ))}
+                              </div>
                             </div>
-                          )}                        </td>
+                          )}
+                        </td>
                         <td className="p-4">
                           <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase border ${getStatusColor(booking.booking_status || booking.status)}`}>
                             {booking.booking_status || booking.status || 'pending'}
@@ -282,7 +337,7 @@ const AdminBookingManager = () => {
           
           {/* --- PAGINATION --- */}
           <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
-            <p className="text-sm text-slate-500 font-medium">Showing 1 to {bookings.length} of {bookings.length} results</p>
+            <p className="text-sm text-slate-500 font-medium">Showing 1 to {filteredBookings.length} of {filteredBookings.length} results</p>
             <div className="flex gap-2">
               <button className="px-4 py-2 border border-slate-200 rounded-lg text-sm font-bold bg-white text-slate-400 cursor-not-allowed">Previous</button>
               <button className="px-4 py-2 border border-slate-200 rounded-lg text-sm font-bold bg-white text-slate-600 hover:bg-slate-100">Next</button>
