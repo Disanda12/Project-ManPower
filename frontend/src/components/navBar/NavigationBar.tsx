@@ -18,21 +18,20 @@ const NavigationBar = () => {
 
   // Logic: Check if logged in and redirect accordingly
 
-  const handleJobSeekerClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const isLoggedIn = localStorage.getItem("userToken");
+ const handleJobSeekerClick = (e: React.MouseEvent) => {
+  e.preventDefault();
+  const isLoggedIn = localStorage.getItem("token");
 
-    if (isLoggedIn) {
-      navigate("/booking");
-    } else {
-      // We tell the login page: "After success, go to /booking"
-      navigate("/login", { state: { from: "/booking" } });
-    }
-  };
-
-    const handleOrderHistoryClick = (e: React.MouseEvent) => {
+  if (isLoggedIn) {
+    navigate("/booking");
+  } else {
+    // Pass the path as a string in the state object
+    navigate("/login", { state: { from: "/booking" } });
+  }
+};
+  const handleOrderHistoryClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    const isLoggedIn = localStorage.getItem("userToken");
+    const isLoggedIn = localStorage.getItem("token");
 
     if (isLoggedIn) {
       navigate("/booking-history");
@@ -43,24 +42,21 @@ const NavigationBar = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("userToken"); 
-    setIsLoggedIn(false);                 
-    setIsAccountOpen(false);              
-    setMobileMenuOpen(false);           
-    navigate("/");                   
+    localStorage.removeItem("token"); // Changed from 'userToken'
+    localStorage.removeItem("role");
+    localStorage.removeItem("userName");
+    setIsLoggedIn(false);
+    navigate("/");
+    window.dispatchEvent(new Event("storage")); // Trigger sync
   };
-  const [isLoggedIn, setIsLoggedIn] = useState(
-    !!localStorage.getItem("userToken")
-  );
+
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
 
   useEffect(() => {
     const checkAuth = () => {
-      setIsLoggedIn(!!localStorage.getItem("userToken"));
+      setIsLoggedIn(!!localStorage.getItem("token")); // Changed from 'userToken'
     };
-
-    // Listen for the custom event we dispatched in LoginPage
     window.addEventListener("storage", checkAuth);
-
     return () => window.removeEventListener("storage", checkAuth);
   }, []);
 
