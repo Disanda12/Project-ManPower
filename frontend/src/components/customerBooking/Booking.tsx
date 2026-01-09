@@ -5,11 +5,15 @@ import { User, Mail, Phone, Calendar, Users, MapPin, Briefcase, ChevronRight, Al
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useNavigate } from 'react-router-dom';
+import { createBooking } from '../../api/bookingService';
+import { getAllServices } from '../../api/serviceService';
 
 const HireWorkerForm = () => {
   const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
   const [startDate, endDate] = dateRange;
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [services, setServices] = useState<{service_id: number, service_name: string}[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     customerName: '',
@@ -30,7 +34,19 @@ const navigate = useNavigate();
       // Not logged in? Redirect to login
       navigate("/login");
     }
+
+    // Fetch available services
+    fetchServices();
   }, [navigate]);
+
+  const fetchServices = async () => {
+    try {
+      const servicesData = await getAllServices();
+      setServices(servicesData);
+    } catch (error) {
+      console.error('Failed to fetch services:', error);
+    }
+  };
   // Validation Logic: Check if Calendar days match Hire Duration input
   useEffect(() => {
     if (startDate && endDate) {
@@ -45,12 +61,38 @@ const navigate = useNavigate();
     }
   }, [startDate, endDate, formData.numDays]);
 
-  const handleSubmit = (e: any) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
-    if (errorMessage) return; // Prevent submission if error exists
+    if (errorMessage || !startDate || !endDate) return; // Prevent submission if error exists
+
+    setLoading(true);
     
-    console.log("Order Placed:", { ...formData, startDate, endDate });
-    alert("Order Submitted Successfully!");
+    try {
+      // Calculate total amount (this is a simple calculation - you might want to make this more sophisticated)
+      const dailyRate = 5000; // LKR per worker per day
+      const totalAmount = formData.numWorkers * formData.numDays * dailyRate;
+      const advanceAmount = totalAmount * 0.3; // 30% advance
+
+      const bookingData = {
+        service_id: parseInt(formData.workerType), // This should be the service_id
+        number_of_workers: formData.numWorkers,
+        work_description: `Work at: ${formData.address}`,
+        start_date: startDate.toISOString().split('T')[0],
+        end_date: endDate.toISOString().split('T')[0],
+        total_amount_lkr: totalAmount,
+        advance_amount_lkr: advanceAmount
+      };
+
+      await createBooking(bookingData);
+      
+      alert("Booking Submitted Successfully! Real workers will be assigned to your project.");
+      navigate('/booking-history'); // Redirect to booking history
+    } catch (error: any) {
+      console.error('Booking submission error:', error);
+      alert(`Booking failed: ${error.message || 'Please try again'}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -140,16 +182,19 @@ const navigate = useNavigate();
             </h3>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Worker Type</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Service Type</label>
               <select 
+                required
                 className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition"
                 onChange={(e) => setFormData({...formData, workerType: e.target.value})}
+                value={formData.workerType}
               >
-                <option value="">Select a Category</option>
-                <option value="it">IT & Technology</option>
-                <option value="admin">Administrative</option>
-                <option value="industrial">Industrial/Manufacturing</option>
-                <option value="finance">Accounting & Finance</option>
+                <option value="">Select a Service</option>
+                {services.map((service) => (
+                  <option key={service.service_id} value={service.service_id}>
+                    {service.service_name}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -208,13 +253,14 @@ const navigate = useNavigate();
           <div className="md:col-span-2 mt-4">
             <button 
               type="submit"
-              disabled={!!errorMessage || !endDate}
+              disabled={!!errorMessage || !endDate || loading}
               className={`w-full font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 text-lg transform transition-all
-                ${errorMessage || !endDate 
+                ${errorMessage || !endDate || loading
                   ? 'bg-gray-300 cursor-not-allowed text-gray-500' 
                   : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200 hover:scale-[1.01]'}`}
             >
-              Confirm & Place Order <ChevronRight size={20} />
+              {loading ? 'Processing...' : 'Confirm & Place Order'} 
+              {!loading && <ChevronRight size={20} />}
             </button>
             <p className="text-center text-gray-500 text-xs mt-4">
               By clicking confirm, you agree to our Staffing Terms & Conditions.

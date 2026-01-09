@@ -159,6 +159,7 @@ const UserManagement: React.FC = () => {
                         >
                             <option value="customer">Customer</option>
                             <option value="admin">Admin</option>
+                            <option value="worker">Worker</option>
                         </select>
                         <button
                             type="submit"
@@ -211,6 +212,7 @@ const UserManagement: React.FC = () => {
                                     >
                                         <option value="customer">Customer</option>
                                         <option value="admin">Admin</option>
+                                        <option value="worker">Worker</option>
                                     </select>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">

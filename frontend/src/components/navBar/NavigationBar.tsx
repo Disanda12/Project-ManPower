@@ -136,6 +136,13 @@ const NavigationBar = () => {
                                 <User size={16} />
                                 <span>User Management</span>
                               </Link>
+                              <Link
+                                to="/admin/workers"
+                                className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00467f] transition-colors"
+                              >
+                                <User size={16} />
+                                <span>Worker Management</span>
+                              </Link>
                             </>
                           )}
                           <Link

@@ -17,6 +17,7 @@ import SignUp from './components/signUp/SignUp';
 import AdminBookingManager from './components/admin/bookingManagement/BookingMangement';
 import AdminFeedbackManager from './components/admin/adminFeedback/AdminFeedbackManager';
 import UserManagement from './components/admin/userManagement/UserManagement';
+import WorkerManagement from './components/admin/workerManagement/WorkerManagement';
 
 function App() {
   return (
@@ -47,6 +48,7 @@ function App() {
             <Route path="/admin/bookings" element={<AdminBookingManager />} />
             <Route path="/admin/feedbacks" element={<AdminFeedbackManager />} />
             <Route path="/admin/users" element={<UserManagement />} />
+            <Route path="/admin/workers" element={<WorkerManagement />} />
           </Routes>
         </main>
 
