@@ -133,8 +133,8 @@ const AdminSettings: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-20 md:pt-28 pb-10 md:pb-20 px-4 md:px-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gray-50 pt-10 pb-10 md:pb-20 px-4 md:px-8">
+      <div className="max-w-7xl px-4 md:px-10 mx-auto">
         {/* Header */}
         <div className="mb-6 md:mb-8">
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Admin Settings</h1>
