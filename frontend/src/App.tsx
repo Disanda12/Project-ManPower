@@ -20,6 +20,7 @@ import UserManagement from './components/admin/userManagement/UserManagement';
 import WorkerManagement from './components/admin/workerManagement/WorkerManagement';
 import ServiceManagement from './components/admin/serviceManagement/ServiceManagement';
 import AdminDashboard from './components/admin/AdminDashboard';
+import ScrollToTop from './components/ScrollToTop';
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
           duration: 3000, 
         }}
       />
+      <ScrollToTop />
       
       <div className="flex flex-col min-h-screen">
         <NavigationBar />
