@@ -28,7 +28,7 @@ const LoginPage = () => {
       const from = location.state?.from?.pathname || "/";
 
       // 3. Logic: Admin always goes to dashboard, customers go to 'from'
-      const destination = data.role === "admin" ? "/admin/bookings" : from;
+      const destination = data.role === "admin" ? "/admin" : from;
 
       // Use { replace: true } so the user can't go "back" to the login page
       navigate(destination, { replace: true });
