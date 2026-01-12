@@ -51,6 +51,19 @@ export const createUser = async (userData: CreateUserData): Promise<any> => {
     }
 };
 
+// Update user (admin only)
+export const updateUser = async (userId: string, userData: Partial<CreateUserData>): Promise<any> => {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await axios.put(USER_ENDPOINTS.UPDATE_USER(userId), userData, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        return response.data;
+    } catch (error: any) {
+        throw error.response?.data?.message || "Failed to update user";
+    }
+};
+
 // Get all users (admin only)
 export const getAllUsers = async (): Promise<User[]> => {
     try {

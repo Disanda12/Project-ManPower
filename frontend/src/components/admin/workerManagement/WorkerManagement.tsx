@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getAllUsers, deleteUser, createUser } from '../../../api/userService';
+import { getAllUsers, deleteUser, createUser, updateUser } from '../../../api/userService';
 import { getAllServices } from '../../../api/serviceService';
 import { notify } from '../../utils/notify';
 
@@ -20,6 +20,7 @@ const WorkerManagement: React.FC = () => {
     const [services, setServices] = useState<{service_id: number, service_name: string}[]>([]);
     const [loading, setLoading] = useState(true);
     const [showCreateForm, setShowCreateForm] = useState(false);
+    const [editingWorker, setEditingWorker] = useState<User | null>(null);
     const [newWorker, setNewWorker] = useState({
         firstName: '',
         lastName: '',
@@ -75,6 +76,24 @@ const WorkerManagement: React.FC = () => {
         }
     };
 
+    const handleEditWorker = (worker: User) => {
+        setEditingWorker(worker);
+        setNewWorker({
+            firstName: worker.first_name,
+            lastName: worker.last_name,
+            email: worker.email,
+            phone: worker.phone,
+            address: worker.address,
+            password: '', // Don't populate password for security
+            user_type: worker.user_type,
+            service_id: worker.service_id?.toString() || '',
+            experience_years: '', // Assuming not stored, or add if available
+            bio: '', // Assuming not stored
+            is_available: true // Assuming default
+        });
+        setShowCreateForm(true);
+    };
+
     const handleDeleteWorker = async (workerId: number) => {
         // Check if user is still logged in as admin
         const token = localStorage.getItem('token');
@@ -96,7 +115,7 @@ const WorkerManagement: React.FC = () => {
         }
     };
 
-    const handleCreateWorker = async (e: React.FormEvent) => {
+    const handleSubmitWorker = async (e: React.FormEvent) => {
         e.preventDefault();
         
         // Check if user is still logged in as admin
@@ -104,7 +123,7 @@ const WorkerManagement: React.FC = () => {
         const role = localStorage.getItem('role');
         
         if (!token || role !== 'admin') {
-            notify.error('You must be logged in as an admin to create workers');
+            notify.error('You must be logged in as an admin to manage workers');
             return;
         }
         
@@ -121,9 +140,21 @@ const WorkerManagement: React.FC = () => {
         }
         
         try {
-            await createUser(newWorker);
-            notify.success('Worker created successfully');
+            if (editingWorker) {
+                // Update existing worker - exclude password if empty
+                const updateData = { ...newWorker };
+                if (!updateData.password) {
+                    delete updateData.password;
+                }
+                await updateUser(editingWorker.user_id.toString(), updateData);
+                notify.success('Worker updated successfully');
+            } else {
+                // Create new worker
+                await createUser(newWorker);
+                notify.success('Worker created successfully');
+            }
             setShowCreateForm(false);
+            setEditingWorker(null);
             setNewWorker({
                 firstName: '',
                 lastName: '',
@@ -139,7 +170,7 @@ const WorkerManagement: React.FC = () => {
             });
             fetchWorkers(); // Refresh the list
         } catch (error) {
-            notify.error('Failed to create worker');
+            notify.error(editingWorker ? 'Failed to update worker' : 'Failed to create worker');
         }
     };
 
@@ -165,11 +196,29 @@ const WorkerManagement: React.FC = () => {
     }
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="container max-w-7xl mx-auto px-4 py-8">
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
                 <h1 className="text-2xl lg:text-3xl font-bold text-[#00467f]">Worker Management</h1>
                 <button
-                    onClick={() => setShowCreateForm(!showCreateForm)}
+                    onClick={() => {
+                        if (showCreateForm && editingWorker) {
+                            setEditingWorker(null);
+                            setNewWorker({
+                                firstName: '',
+                                lastName: '',
+                                email: '',
+                                phone: '',
+                                address: '',
+                                password: '',
+                                user_type: 'worker',
+                                service_id: '',
+                                experience_years: '',
+                                bio: '',
+                                is_available: true
+                            });
+                        }
+                        setShowCreateForm(!showCreateForm);
+                    }}
                     className="bg-[#00467f] hover:bg-[#003560] text-white font-bold py-2 px-4 rounded w-full lg:w-auto"
                 >
                     {showCreateForm ? 'Cancel' : 'Add New Worker'}
@@ -178,8 +227,8 @@ const WorkerManagement: React.FC = () => {
 
             {showCreateForm && (
                 <div className="bg-white rounded-lg shadow-md p-4 lg:p-6 mb-8">
-                    <h2 className="text-lg lg:text-xl font-bold mb-4">Add New Worker</h2>
-                    <form onSubmit={handleCreateWorker} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <h2 className="text-lg lg:text-xl font-bold mb-4">{editingWorker ? 'Edit Worker' : 'Add New Worker'}</h2>
+                    <form onSubmit={handleSubmitWorker} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         <input
                             type="text"
                             placeholder="First Name"
@@ -222,11 +271,11 @@ const WorkerManagement: React.FC = () => {
                         />
                         <input
                             type="password"
-                            placeholder="Password"
+                            placeholder={editingWorker ? "Password (leave blank to keep current)" : "Password"}
                             value={newWorker.password}
                             onChange={(e) => setNewWorker({...newWorker, password: e.target.value})}
                             className="border border-gray-300 rounded px-3 py-2 w-full"
-                            required
+                            required={!editingWorker}
                         />
                         <select
                             value={newWorker.user_type}
@@ -279,7 +328,7 @@ const WorkerManagement: React.FC = () => {
                             type="submit"
                             className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded w-full col-span-1 lg:col-span-2"
                         >
-                            Add Worker
+                            {editingWorker ? 'Update Worker' : 'Add Worker'}
                         </button>
                     </form>
                 </div>
@@ -325,12 +374,20 @@ const WorkerManagement: React.FC = () => {
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                    <button
-                                        onClick={() => handleDeleteWorker(worker.user_id)}
-                                        className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded"
-                                    >
-                                        Delete
-                                    </button>
+                                    <div className="flex space-x-2">
+                                        <button
+                                            onClick={() => handleEditWorker(worker)}
+                                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteWorker(worker.user_id)}
+                                            className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded"
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
@@ -353,7 +410,13 @@ const WorkerManagement: React.FC = () => {
                                     </span>
                                 </div>
                             </div>
-                            <div className="flex justify-end">
+                            <div className="flex justify-end space-x-2">
+                                <button
+                                    onClick={() => handleEditWorker(worker)}
+                                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded text-sm"
+                                >
+                                    Edit
+                                </button>
                                 <button
                                     onClick={() => handleDeleteWorker(worker.user_id)}
                                     className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"

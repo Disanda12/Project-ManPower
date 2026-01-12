@@ -75,6 +75,127 @@ router.put('/:id/role', authenticateToken, requireAdmin, async (req, res) => {
     }
 });
 
+// Update user details (admin only)
+router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
+    const { id } = req.params;
+    const { firstName, lastName, email, phone, address, password, user_type, service_id, experience_years, bio, profile_image, is_available } = req.body;
+
+    try {
+        // Check if user exists
+        const [existingUser] = await db.query('SELECT * FROM users WHERE user_id = ?', [id]);
+        if (existingUser.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Check if email is already taken by another user
+        if (email) {
+            const [emailCheck] = await db.query('SELECT * FROM users WHERE email = ? AND user_id != ?', [email, id]);
+            if (emailCheck.length > 0) {
+                return res.status(400).json({ message: 'Email already taken' });
+            }
+        }
+
+        // Build update query for users table
+        let updateFields = [];
+        let updateValues = [];
+
+        if (firstName !== undefined) {
+            updateFields.push('first_name = ?');
+            updateValues.push(firstName);
+        }
+        if (lastName !== undefined) {
+            updateFields.push('last_name = ?');
+            updateValues.push(lastName);
+        }
+        if (email !== undefined) {
+            updateFields.push('email = ?');
+            updateValues.push(email);
+        }
+        if (phone !== undefined) {
+            updateFields.push('phone = ?');
+            updateValues.push(phone);
+        }
+        if (address !== undefined) {
+            updateFields.push('address = ?');
+            updateValues.push(address);
+        }
+        if (password) {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            updateFields.push('password_hash = ?');
+            updateValues.push(hashedPassword);
+        }
+        if (user_type !== undefined) {
+            if (!['customer', 'admin', 'worker'].includes(user_type)) {
+                return res.status(400).json({ message: 'Invalid user type' });
+            }
+            updateFields.push('user_type = ?');
+            updateValues.push(user_type);
+        }
+
+        if (updateFields.length > 0) {
+            const sql = `UPDATE users SET ${updateFields.join(', ')} WHERE user_id = ?`;
+            updateValues.push(id);
+            await db.query(sql, updateValues);
+        }
+
+        // If user is a worker, update worker profile
+        if (user_type === 'worker' || existingUser[0].user_type === 'worker') {
+            const serviceIdNum = service_id ? parseInt(service_id, 10) : null;
+            const experienceYearsNum = experience_years ? parseInt(experience_years, 10) : 0;
+            const isAvailableBool = is_available !== undefined ? is_available : true;
+
+            // Check if worker profile exists
+            const [workerProfile] = await db.query('SELECT * FROM worker_profiles WHERE user_id = ?', [id]);
+            
+            if (workerProfile.length > 0) {
+                // Update existing worker profile
+                let workerUpdateFields = [];
+                let workerUpdateValues = [];
+
+                if (serviceIdNum !== null) {
+                    workerUpdateFields.push('service_id = ?');
+                    workerUpdateValues.push(serviceIdNum);
+                }
+                if (experience_years !== undefined) {
+                    workerUpdateFields.push('experience_years = ?');
+                    workerUpdateValues.push(experienceYearsNum);
+                }
+                if (is_available !== undefined) {
+                    workerUpdateFields.push('is_available = ?');
+                    workerUpdateValues.push(isAvailableBool);
+                }
+                if (bio !== undefined) {
+                    workerUpdateFields.push('bio = ?');
+                    workerUpdateValues.push(bio || null);
+                }
+                if (profile_image !== undefined) {
+                    workerUpdateFields.push('profile_image = ?');
+                    workerUpdateValues.push(profile_image || null);
+                }
+
+                if (workerUpdateFields.length > 0) {
+                    const workerSql = `UPDATE worker_profiles SET ${workerUpdateFields.join(', ')} WHERE user_id = ?`;
+                    workerUpdateValues.push(id);
+                    await db.query(workerSql, workerUpdateValues);
+                }
+            } else if (user_type === 'worker') {
+                // Create worker profile if user is being changed to worker
+                if (!serviceIdNum) {
+                    return res.status(400).json({ message: 'Service ID is required for workers' });
+                }
+                
+                const workerSql = `INSERT INTO worker_profiles (user_id, service_id, experience_years, rating, total_jobs_completed, is_available, bio, profile_image) 
+                                  VALUES (?, ?, ?, 0.00, 0, ?, ?, ?)`;
+                await db.query(workerSql, [id, serviceIdNum, experienceYearsNum, isAvailableBool, bio || null, profile_image || null]);
+            }
+        }
+
+        res.json({ message: 'User updated successfully' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Delete user (admin only)
 router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
     const { id } = req.params;

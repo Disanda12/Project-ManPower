@@ -11,6 +11,7 @@ export const USER_ENDPOINTS = {
     GET_USERS: `${BASE_URL}/users`,
     GET_WORKERS_DETAILS: `${BASE_URL}/users/workers`,
     CREATE_USER: `${BASE_URL}/users`,
+    UPDATE_USER: (id: string) => `${BASE_URL}/users/${id}`,
     UPDATE_USER_ROLE: (id: string) => `${BASE_URL}/users/${id}/role`,
     DELETE_USER: (id: string) => `${BASE_URL}/users/${id}`,
 } as const;

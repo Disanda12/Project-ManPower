@@ -90,7 +90,7 @@ const UserManagement: React.FC = () => {
     }
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="container max-w-7xl mx-auto px-4 py-8">
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
                 <h1 className="text-2xl lg:text-3xl font-bold text-[#00467f]">User Management</h1>
                 <button
