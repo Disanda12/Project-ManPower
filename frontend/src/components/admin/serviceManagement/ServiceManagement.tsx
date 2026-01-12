@@ -17,6 +17,7 @@ const ServiceManagement: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [editingService, setEditingService] = useState<Service | null>(null);
+    const [selectedService, setSelectedService] = useState<Service | null>(null);
     const [newService, setNewService] = useState({
         service_name: '',
         description: '',
@@ -178,6 +179,14 @@ const ServiceManagement: React.FC = () => {
         });
     };
 
+    const handleViewServiceDetails = (service: Service) => {
+        setSelectedService(service);
+    };
+
+    const handleCloseDetails = () => {
+        setSelectedService(null);
+    };
+
     if (loading) {
         return (
             <div className="flex justify-center items-center h-64">
@@ -307,9 +316,6 @@ const ServiceManagement: React.FC = () => {
 
             {/* Services List */}
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
-                    <h2 className="text-lg sm:text-xl font-semibold text-gray-800">All Services</h2>
-                </div>
 
                 {/* Mobile Card Layout */}
                 <div className="block md:hidden">
@@ -320,7 +326,7 @@ const ServiceManagement: React.FC = () => {
                     ) : (
                         <div className="divide-y divide-gray-200">
                             {services.map((service) => (
-                                <div key={service.service_id} className="p-4 hover:bg-gray-50">
+                                <div key={service.service_id} onClick={() => handleViewServiceDetails(service)} className="p-4 hover:bg-gray-50 cursor-pointer">
                                     <div className="flex justify-between items-start mb-2">
                                         <div className="flex-1">
                                             <h3 className="text-sm font-medium text-gray-900">
@@ -348,17 +354,21 @@ const ServiceManagement: React.FC = () => {
 
                                     <div className="flex gap-2">
                                         <button
-                                            onClick={() => {
+                                            onClick={(e) => {
+                                                e.stopPropagation();
                                                 console.log('Edit button clicked for service:', service);
                                                 startEdit(service);
                                             }}
-                                            className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-md text-sm font-medium transition duration-200"
+                                            className="flex-1 bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded text-sm"
                                         >
                                             Edit
                                         </button>
                                         <button
-                                            onClick={() => handleDeleteService(service.service_id)}
-                                            className="flex-1 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md text-sm font-medium transition duration-200"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteService(service.service_id);
+                                            }}
+                                            className="flex-1 bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
                                         >
                                             Delete
                                         </button>
@@ -393,7 +403,7 @@ const ServiceManagement: React.FC = () => {
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                             {services.map((service) => (
-                                <tr key={service.service_id} className="hover:bg-gray-50">
+                                <tr key={service.service_id} onClick={() => handleViewServiceDetails(service)} className="hover:bg-gray-50 cursor-pointer">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div>
                                             <div className="text-sm font-medium text-gray-900">
@@ -423,17 +433,21 @@ const ServiceManagement: React.FC = () => {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <button
-                                            onClick={() => {
+                                            onClick={(e) => {
+                                                e.stopPropagation();
                                                 console.log('Edit button clicked for service:', service);
                                                 startEdit(service);
                                             }}
-                                            className="text-indigo-600 hover:text-indigo-900 mr-3"
+                                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded mr-2"
                                         >
                                             Edit
                                         </button>
                                         <button
-                                            onClick={() => handleDeleteService(service.service_id)}
-                                            className="text-red-600 hover:text-red-900"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteService(service.service_id);
+                                            }}
+                                            className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded"
                                         >
                                             Delete
                                         </button>
@@ -449,6 +463,73 @@ const ServiceManagement: React.FC = () => {
                     )}
                 </div>
             </div>
+
+            {/* Service Details Modal */}
+            {selectedService && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+                        <div className="p-6">
+                            <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-xl font-bold text-[#00467f]">Service Details</h2>
+                                <button
+                                    onClick={handleCloseDetails}
+                                    className="text-gray-500 hover:text-gray-700 text-2xl"
+                                >
+                                    ×
+                                </button>
+                            </div>
+                            <div className="space-y-3">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Service Name</label>
+                                    <p className="text-gray-900">{selectedService.service_name}</p>
+                                </div>
+                                {selectedService.description && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Description</label>
+                                        <p className="text-gray-900 whitespace-pre-wrap">{selectedService.description}</p>
+                                    </div>
+                                )}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Daily Rate</label>
+                                    <p className="text-gray-900">LKR {selectedService.daily_rate_lkr.toLocaleString()}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Advance Percentage</label>
+                                    <p className="text-gray-900">{selectedService.advance_percentage}%</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Status</label>
+                                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                        selectedService.is_available
+                                            ? 'bg-green-100 text-green-800'
+                                            : 'bg-red-100 text-red-800'
+                                    }`}>
+                                        {selectedService.is_available ? 'Available' : 'Unavailable'}
+                                    </span>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Service ID</label>
+                                    <p className="text-gray-900">{selectedService.service_id}</p>
+                                </div>
+                                {selectedService.created_at && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Created At</label>
+                                        <p className="text-gray-900">{new Date(selectedService.created_at).toLocaleDateString()}</p>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="mt-6 flex justify-end">
+                                <button
+                                    onClick={handleCloseDetails}
+                                    className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
