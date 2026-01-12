@@ -24,6 +24,8 @@ const WorkerManagement: React.FC = () => {
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [editingWorker, setEditingWorker] = useState<User | null>(null);
     const [selectedWorker, setSelectedWorker] = useState<User | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 8;
     const [newWorker, setNewWorker] = useState({
         firstName: '',
         lastName: '',
@@ -58,6 +60,7 @@ const WorkerManagement: React.FC = () => {
             const userData = await getAllUsers();
             const workerData = userData.filter(user => user.user_type === 'worker');
             setWorkers(workerData);
+            setCurrentPage(1);
         } catch (error: any) {
             if (error.includes('Access denied') || error.includes('Invalid token') || error.includes('Admin access required')) {
                 navigate('/login');
@@ -205,6 +208,9 @@ const WorkerManagement: React.FC = () => {
             </div>
         );
     }
+
+    const totalPages = Math.ceil(workers.length / itemsPerPage);
+    const paginatedWorkers = workers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     return (
         <div className="container max-w-7xl mx-auto px-4 md:px-8 py-8">
@@ -368,7 +374,7 @@ const WorkerManagement: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                        {workers.map((worker) => (
+                        {paginatedWorkers.map((worker) => (
                             <tr key={worker.user_id} onClick={() => handleViewWorkerDetails(worker)} className="cursor-pointer hover:bg-gray-50">
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     {worker.first_name} {worker.last_name}
@@ -413,7 +419,7 @@ const WorkerManagement: React.FC = () => {
 
                 {/* Mobile Cards */}
                 <div className="lg:hidden">
-                    {workers.map((worker) => (
+                    {paginatedWorkers.map((worker) => (
                         <div key={worker.user_id} onClick={() => handleViewWorkerDetails(worker)} className="p-4 border-b border-gray-200 last:border-b-0 cursor-pointer hover:bg-gray-50">
                             <div className="flex justify-between items-start mb-3">
                                 <div>
@@ -451,6 +457,31 @@ const WorkerManagement: React.FC = () => {
                     ))}
                 </div>
             </div>
+
+            {/* Pagination */}
+            {workers.length > itemsPerPage && (
+                <div className="flex justify-between items-center px-6 py-3 bg-white border-t border-gray-200 rounded-b-lg">
+                    <div className="text-sm text-gray-700">
+                        Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, workers.length)} of {workers.length} workers
+                    </div>
+                    <div className="flex space-x-2">
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                            disabled={currentPage === 1}
+                            className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-500 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Previous
+                        </button>
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                            disabled={currentPage === totalPages}
+                            className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-500 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Next
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Worker Details Modal */}
             {selectedWorker && (

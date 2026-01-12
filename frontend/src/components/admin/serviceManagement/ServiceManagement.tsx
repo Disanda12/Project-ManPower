@@ -18,6 +18,8 @@ const ServiceManagement: React.FC = () => {
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [editingService, setEditingService] = useState<Service | null>(null);
     const [selectedService, setSelectedService] = useState<Service | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 8;
     const [newService, setNewService] = useState({
         service_name: '',
         description: '',
@@ -34,6 +36,7 @@ const ServiceManagement: React.FC = () => {
         try {
             const serviceData = await getAllServices();
             setServices(serviceData);
+            setCurrentPage(1);
         } catch (error) {
             notify.error('Failed to fetch services');
         } finally {
@@ -187,6 +190,9 @@ const ServiceManagement: React.FC = () => {
         setSelectedService(null);
     };
 
+    const totalPages = Math.ceil(services.length / itemsPerPage);
+    const paginatedServices = services.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
     if (loading) {
         return (
             <div className="flex justify-center items-center h-64">
@@ -319,13 +325,13 @@ const ServiceManagement: React.FC = () => {
 
                 {/* Mobile Card Layout */}
                 <div className="block md:hidden">
-                    {services.length === 0 ? (
+                    {paginatedServices.length === 0 ? (
                         <div className="px-4 py-8 text-center text-gray-500">
                             No services found. Create your first service above.
                         </div>
                     ) : (
                         <div className="divide-y divide-gray-200">
-                            {services.map((service) => (
+                            {paginatedServices.map((service) => (
                                 <div key={service.service_id} onClick={() => handleViewServiceDetails(service)} className="p-4 hover:bg-gray-50 cursor-pointer">
                                     <div className="flex justify-between items-start mb-2">
                                         <div className="flex-1">
@@ -402,7 +408,7 @@ const ServiceManagement: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {services.map((service) => (
+                            {paginatedServices.map((service) => (
                                 <tr key={service.service_id} onClick={() => handleViewServiceDetails(service)} className="hover:bg-gray-50 cursor-pointer">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div>
@@ -456,13 +462,38 @@ const ServiceManagement: React.FC = () => {
                             ))}
                         </tbody>
                     </table>
-                    {services.length === 0 && (
+                    {paginatedServices.length === 0 && (
                         <div className="px-6 py-4 text-center text-gray-500">
                             No services found. Create your first service above.
                         </div>
                     )}
                 </div>
             </div>
+
+            {/* Pagination */}
+            {services.length > itemsPerPage && (
+                <div className="flex justify-between items-center px-6 py-3 bg-white border-t border-gray-200 rounded-b-lg">
+                    <div className="text-sm text-gray-700">
+                        Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, services.length)} of {services.length} services
+                    </div>
+                    <div className="flex space-x-2">
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                            disabled={currentPage === 1}
+                            className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-500 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Previous
+                        </button>
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                            disabled={currentPage === totalPages}
+                            className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-500 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Next
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Service Details Modal */}
             {selectedService && (

@@ -17,6 +17,8 @@ const UserManagement: React.FC = () => {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [showCreateForm, setShowCreateForm] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 8;
     const [newUser, setNewUser] = useState({
         firstName: '',
         lastName: '',
@@ -35,6 +37,7 @@ const UserManagement: React.FC = () => {
         try {
             const userData = await getAllUsers();
             setUsers(userData.filter(user => user.user_type !== 'worker'));
+            setCurrentPage(1);
         } catch (error) {
             notify.error('Failed to fetch users');
         } finally {
@@ -88,6 +91,9 @@ const UserManagement: React.FC = () => {
     if (loading) {
         return <div className="flex justify-center items-center h-64">Loading...</div>;
     }
+
+    const totalPages = Math.ceil(users.length / itemsPerPage);
+    const paginatedUsers = users.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     return (
         <div className="container max-w-7xl mx-auto px-4 md:px-8 py-8">
@@ -194,7 +200,7 @@ const UserManagement: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                        {users.map((user) => (
+                        {paginatedUsers.map((user) => (
                             <tr key={user.user_id}>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     {user.first_name} {user.last_name}
@@ -230,7 +236,7 @@ const UserManagement: React.FC = () => {
 
                 {/* Mobile Cards */}
                 <div className="lg:hidden">
-                    {users.map((user) => (
+                    {paginatedUsers.map((user) => (
                         <div key={user.user_id} className="p-4 border-b border-gray-200 last:border-b-0">
                             <div className="flex justify-between items-start mb-3">
                                 <div>
@@ -261,6 +267,31 @@ const UserManagement: React.FC = () => {
                     ))}
                 </div>
             </div>
+
+            {/* Pagination */}
+            {users.length > itemsPerPage && (
+                <div className="flex justify-between items-center px-6 py-3 bg-white border-t border-gray-200 rounded-b-lg">
+                    <div className="text-sm text-gray-700">
+                        Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, users.length)} of {users.length} users
+                    </div>
+                    <div className="flex space-x-2">
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                            disabled={currentPage === 1}
+                            className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-500 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Previous
+                        </button>
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                            disabled={currentPage === totalPages}
+                            className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-500 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Next
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
