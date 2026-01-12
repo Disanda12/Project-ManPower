@@ -207,7 +207,7 @@ const WorkerManagement: React.FC = () => {
     return (
         <div className="container max-w-7xl mx-auto px-4 md:px-8 py-8">
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
-                <h1 className="text-2xl lg:text-3xl font-bold text-[#00467f]">Worker Management</h1>
+                <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">Worker Management</h1>
                 <button
                     onClick={() => {
                         if (showCreateForm && editingWorker) {

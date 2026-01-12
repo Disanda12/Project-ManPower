@@ -18,6 +18,7 @@ import AdminBookingManager from './components/admin/bookingManagement/BookingMan
 import AdminFeedbackManager from './components/admin/adminFeedback/AdminFeedbackManager';
 import UserManagement from './components/admin/userManagement/UserManagement';
 import WorkerManagement from './components/admin/workerManagement/WorkerManagement';
+import ServiceManagement from './components/admin/serviceManagement/ServiceManagement';
 
 function App() {
   return (
@@ -49,6 +50,7 @@ function App() {
             <Route path="/admin/feedbacks" element={<AdminFeedbackManager />} />
             <Route path="/admin/users" element={<UserManagement />} />
             <Route path="/admin/workers" element={<WorkerManagement />} />
+            <Route path="/admin/services" element={<ServiceManagement />} />
           </Routes>
         </main>
 

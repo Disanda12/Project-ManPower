@@ -8,6 +8,7 @@ const app = express();
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const bookingRoutes = require('./routes/bookings');
+const serviceRoutes = require('./routes/services');
 
 // Middleware
 app.use(cors());
@@ -16,16 +17,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/bookings', bookingRoutes);
-// TEST ROUTE: Get all services from your SQL table
-app.get('/api/services', async (req, res) => {
-  try {
-    const [rows] = await db.query('SELECT * FROM services');
-    res.json(rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Database connection failed" });
-  }
-});
+app.use('/api/services', serviceRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

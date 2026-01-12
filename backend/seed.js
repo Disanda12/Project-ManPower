@@ -21,17 +21,17 @@ async function seedDatabase() {
     // First, ensure we have services
     console.log('📋 Checking/creating services...');
     const services = [
-      { service_name: 'House Cleaning', description: 'Professional house cleaning services' },
-      { service_name: 'Office Cleaning', description: 'Commercial office cleaning' },
-      { service_name: 'Gardening', description: 'Garden maintenance and landscaping' },
-      { service_name: 'Plumbing', description: 'Plumbing repair and installation' },
-      { service_name: 'Electrical Work', description: 'Electrical repairs and installations' }
+      { service_name: 'House Cleaning', description: 'Professional house cleaning services', daily_rate_lkr: 2500.00, advance_percentage: 25.00 },
+      { service_name: 'Office Cleaning', description: 'Commercial office cleaning', daily_rate_lkr: 3000.00, advance_percentage: 30.00 },
+      { service_name: 'Gardening', description: 'Garden maintenance and landscaping', daily_rate_lkr: 2000.00, advance_percentage: 20.00 },
+      { service_name: 'Plumbing', description: 'Plumbing repair and installation', daily_rate_lkr: 3500.00, advance_percentage: 30.00 },
+      { service_name: 'Electrical Work', description: 'Electrical repairs and installations', daily_rate_lkr: 4000.00, advance_percentage: 35.00 }
     ];
 
     for (const service of services) {
       await db.query(
-        'INSERT IGNORE INTO services (service_name, description) VALUES (?, ?)',
-        [service.service_name, service.description]
+        'INSERT IGNORE INTO services (service_name, description, daily_rate_lkr, advance_percentage) VALUES (?, ?, ?, ?)',
+        [service.service_name, service.description, service.daily_rate_lkr, service.advance_percentage]
       );
     }
 

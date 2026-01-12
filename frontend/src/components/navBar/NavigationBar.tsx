@@ -182,6 +182,14 @@ const NavigationBar = () => {
                                 <User size={16} />
                                 <span>Worker Management</span>
                               </Link>
+                              <Link
+                                to="/admin/services"
+                                className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00467f] transition-colors"
+                                onClick={() => setIsAccountOpen(false)}
+                              >
+                                <Settings size={16} />
+                                <span>Service Management</span>
+                              </Link>
                             </>
                           )}
                           <Link
@@ -384,6 +392,13 @@ const NavigationBar = () => {
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Worker Management
+                    </Link>
+                    <Link
+                      to="/admin/services"
+                      className="block text-gray-700 hover:text-[#00467f] font-medium py-2"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Service Management
                     </Link>
                   </>
                 )}
