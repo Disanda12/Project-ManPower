@@ -134,6 +134,73 @@ const AdminBookingManager = () => {
     }
   };
 
+  const exportToCSV = () => {
+    if (filteredBookings.length === 0) {
+      notify.error('No data to export');
+      return;
+    }
+
+    // Define CSV headers
+    const headers = [
+      'Booking ID',
+      'Customer Name',
+      'Service',
+      'Duration (Days)',
+      'Workers Required',
+      'Assigned Workers',
+      'Status',
+      'Booking Date',
+      'Start Date',
+      'End Date',
+      'Total Amount (LKR)',
+      'Advance Amount (LKR)',
+      'Remaining Amount (LKR)',
+      'Payment Status',
+      'Work Description'
+    ];
+
+    // Convert bookings to CSV rows
+    const csvRows = filteredBookings.map(booking => [
+      booking.booking_id || booking.id || '',
+      booking.customer_name || 
+      (booking.customer_first_name && booking.customer_last_name 
+        ? `${booking.customer_first_name} ${booking.customer_last_name}`
+        : ''),
+      booking.service_type || booking.service_name || '',
+      booking.total_days || 1,
+      booking.worker_count || booking.number_of_workers || 0,
+      booking.assigned_workers || '',
+      booking.booking_status || booking.status || '',
+      booking.booking_date ? new Date(booking.booking_date).toLocaleDateString() : '',
+      booking.start_date ? new Date(booking.start_date).toLocaleDateString() : '',
+      booking.end_date ? new Date(booking.end_date).toLocaleDateString() : '',
+      booking.total_amount_lkr || 0,
+      booking.advance_amount_lkr || 0,
+      booking.remaining_amount_lkr || 0,
+      booking.payment_status || '',
+      `"${(booking.work_description || '').replace(/"/g, '""')}"` // Escape quotes in description
+    ]);
+
+    // Combine headers and rows
+    const csvContent = [headers, ...csvRows]
+      .map(row => row.map(field => String(field || '').replace(/,/g, ';'))) // Replace commas with semicolons to avoid CSV issues
+      .map(row => row.join(','))
+      .join('\n');
+
+    // Create and download the CSV file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `bookings_${activeTab}_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    notify.success(`Exported ${filteredBookings.length} bookings to CSV`);
+  };
+
   const getStatusStats = () => {
     const total = bookings.length;
     const pending = bookings.filter(b => b.booking_status === 'pending').length;
@@ -195,7 +262,10 @@ const AdminBookingManager = () => {
             </p>
           </div>
           <div className="flex gap-3">
-            <button className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
+            <button 
+              onClick={exportToCSV}
+              className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm"
+            >
               <Download size={18} /> Export CSV
             </button>
           </div>
@@ -223,10 +293,10 @@ const AdminBookingManager = () => {
         </div>
 
         {/* --- TABS --- */}
-        <div className="flex gap-1 mb-6 bg-slate-100 p-1 rounded-xl w-fit">
+        <div className="flex flex-col md:flex-row gap-1 mb-6 bg-slate-100 p-1 rounded-xl w-full md:w-fit">
           <button
             onClick={() => setActiveTab('pending')}
-            className={`px-6 py-2 rounded-lg font-bold text-sm transition-all ${
+            className={`px-4 md:px-6 py-2 rounded-lg font-bold text-sm transition-all ${
               activeTab === 'pending'
                 ? 'bg-white text-slate-900 shadow-sm'
                 : 'text-slate-600 hover:text-slate-800'
@@ -236,7 +306,7 @@ const AdminBookingManager = () => {
           </button>
           <button
             onClick={() => setActiveTab('assigned')}
-            className={`px-6 py-2 rounded-lg font-bold text-sm transition-all ${
+            className={`px-4 md:px-6 py-2 rounded-lg font-bold text-sm transition-all ${
               activeTab === 'assigned'
                 ? 'bg-white text-slate-900 shadow-sm'
                 : 'text-slate-600 hover:text-slate-800'
@@ -246,7 +316,7 @@ const AdminBookingManager = () => {
           </button>
           <button
             onClick={() => setActiveTab('history')}
-            className={`px-6 py-2 rounded-lg font-bold text-sm transition-all ${
+            className={`px-4 md:px-6 py-2 rounded-lg font-bold text-sm transition-all ${
               activeTab === 'history'
                 ? 'bg-white text-slate-900 shadow-sm'
                 : 'text-slate-600 hover:text-slate-800'

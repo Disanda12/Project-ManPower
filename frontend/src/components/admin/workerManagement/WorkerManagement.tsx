@@ -166,26 +166,26 @@ const WorkerManagement: React.FC = () => {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-bold text-[#00467f]">Worker Management</h1>
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
+                <h1 className="text-2xl lg:text-3xl font-bold text-[#00467f]">Worker Management</h1>
                 <button
                     onClick={() => setShowCreateForm(!showCreateForm)}
-                    className="bg-[#00467f] hover:bg-[#003560] text-white font-bold py-2 px-4 rounded"
+                    className="bg-[#00467f] hover:bg-[#003560] text-white font-bold py-2 px-4 rounded w-full lg:w-auto"
                 >
                     {showCreateForm ? 'Cancel' : 'Add New Worker'}
                 </button>
             </div>
 
             {showCreateForm && (
-                <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-                    <h2 className="text-xl font-bold mb-4">Add New Worker</h2>
-                    <form onSubmit={handleCreateWorker} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white rounded-lg shadow-md p-4 lg:p-6 mb-8">
+                    <h2 className="text-lg lg:text-xl font-bold mb-4">Add New Worker</h2>
+                    <form onSubmit={handleCreateWorker} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         <input
                             type="text"
                             placeholder="First Name"
                             value={newWorker.firstName}
                             onChange={(e) => setNewWorker({...newWorker, firstName: e.target.value})}
-                            className="border border-gray-300 rounded px-3 py-2"
+                            className="border border-gray-300 rounded px-3 py-2 w-full"
                             required
                         />
                         <input
@@ -193,7 +193,7 @@ const WorkerManagement: React.FC = () => {
                             placeholder="Last Name"
                             value={newWorker.lastName}
                             onChange={(e) => setNewWorker({...newWorker, lastName: e.target.value})}
-                            className="border border-gray-300 rounded px-3 py-2"
+                            className="border border-gray-300 rounded px-3 py-2 w-full"
                             required
                         />
                         <input
@@ -201,7 +201,7 @@ const WorkerManagement: React.FC = () => {
                             placeholder="Email"
                             value={newWorker.email}
                             onChange={(e) => setNewWorker({...newWorker, email: e.target.value})}
-                            className="border border-gray-300 rounded px-3 py-2"
+                            className="border border-gray-300 rounded px-3 py-2 w-full"
                             required
                         />
                         <input
@@ -209,14 +209,15 @@ const WorkerManagement: React.FC = () => {
                             placeholder="Phone"
                             value={newWorker.phone}
                             onChange={(e) => setNewWorker({...newWorker, phone: e.target.value})}
-                            className="border border-gray-300 rounded px-3 py-2"
+                            className="border border-gray-300 rounded px-3 py-2 w-full"
                             required
                         />
                         <textarea
                             placeholder="Address"
                             value={newWorker.address}
                             onChange={(e) => setNewWorker({...newWorker, address: e.target.value})}
-                            className="border border-gray-300 rounded px-3 py-2 md:col-span-2"
+                            className="border border-gray-300 rounded px-3 py-2 w-full col-span-1 lg:col-span-2"
+                            rows={3}
                             required
                         />
                         <input
@@ -224,20 +225,20 @@ const WorkerManagement: React.FC = () => {
                             placeholder="Password"
                             value={newWorker.password}
                             onChange={(e) => setNewWorker({...newWorker, password: e.target.value})}
-                            className="border border-gray-300 rounded px-3 py-2"
+                            className="border border-gray-300 rounded px-3 py-2 w-full"
                             required
                         />
                         <select
                             value={newWorker.user_type}
                             onChange={(e) => setNewWorker({...newWorker, user_type: e.target.value})}
-                            className="border border-gray-300 rounded px-3 py-2"
+                            className="border border-gray-300 rounded px-3 py-2 w-full"
                         >
                             <option value="worker">Worker</option>
                         </select>
                         <select
                             value={newWorker.service_id}
                             onChange={(e) => setNewWorker({...newWorker, service_id: e.target.value})}
-                            className="border border-gray-300 rounded px-3 py-2"
+                            className="border border-gray-300 rounded px-3 py-2 w-full"
                             required
                         >
                             <option value="">Select Service</option>
@@ -252,10 +253,10 @@ const WorkerManagement: React.FC = () => {
                             placeholder="Years of Experience"
                             value={newWorker.experience_years}
                             onChange={(e) => setNewWorker({...newWorker, experience_years: e.target.value})}
-                            className="border border-gray-300 rounded px-3 py-2"
+                            className="border border-gray-300 rounded px-3 py-2 w-full"
                             min="0"
                         />
-                        <div className="md:col-span-2">
+                        <div className="lg:col-span-2">
                             <textarea
                                 placeholder="Bio (Optional)"
                                 value={newWorker.bio}
@@ -264,7 +265,7 @@ const WorkerManagement: React.FC = () => {
                                 rows={3}
                             />
                         </div>
-                        <div className="flex items-center">
+                        <div className="flex items-center col-span-1 lg:col-span-2">
                             <input
                                 type="checkbox"
                                 id="is_available"
@@ -276,7 +277,7 @@ const WorkerManagement: React.FC = () => {
                         </div>
                         <button
                             type="submit"
-                            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded md:col-span-2"
+                            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded w-full col-span-1 lg:col-span-2"
                         >
                             Add Worker
                         </button>
@@ -285,7 +286,8 @@ const WorkerManagement: React.FC = () => {
             )}
 
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
+                {/* Desktop Table */}
+                <table className="hidden lg:table min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -334,6 +336,34 @@ const WorkerManagement: React.FC = () => {
                         ))}
                     </tbody>
                 </table>
+
+                {/* Mobile Cards */}
+                <div className="lg:hidden">
+                    {workers.map((worker) => (
+                        <div key={worker.user_id} className="p-4 border-b border-gray-200 last:border-b-0">
+                            <div className="flex justify-between items-start mb-3">
+                                <div>
+                                    <h3 className="font-semibold text-gray-900">
+                                        {worker.first_name} {worker.last_name}
+                                    </h3>
+                                    <p className="text-sm text-gray-600">{worker.email}</p>
+                                    <p className="text-sm text-gray-600">{worker.phone}</p>
+                                    <span className="inline-block mt-2 px-2 py-1 text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                        {worker.service_name || 'Not Assigned'}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="flex justify-end">
+                                <button
+                                    onClick={() => handleDeleteWorker(worker.user_id)}
+                                    className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );

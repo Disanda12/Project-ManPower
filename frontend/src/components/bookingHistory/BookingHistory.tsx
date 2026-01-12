@@ -131,7 +131,7 @@ const OrderHistory = () => {
               </button>
             </div>
           ) : (
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="popLayout">
               {filteredOrders.length > 0 ? (
                 filteredOrders.map((booking) => (
                   <motion.div
