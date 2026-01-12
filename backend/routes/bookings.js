@@ -247,4 +247,48 @@ router.put('/:bookingId/assign-workers', authenticateToken, async (req, res) => 
     }
 });
 
+// Update booking status (admin only)
+router.put('/:bookingId/status', authenticateToken, async (req, res) => {
+    const { bookingId } = req.params;
+    const { status } = req.body;
+
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    // Validate status
+    const validStatuses = ['pending', 'confirmed', 'assigned', 'in_progress', 'completed', 'cancelled'];
+    if (!validStatuses.includes(status)) {
+        return res.status(400).json({ error: 'Invalid status. Must be one of: ' + validStatuses.join(', ') });
+    }
+
+    try {
+        // Check if booking exists
+        const [bookingCheck] = await db.query(
+            'SELECT booking_id, booking_status FROM bookings WHERE booking_id = ?',
+            [bookingId]
+        );
+
+        if (bookingCheck.length === 0) {
+            return res.status(404).json({ error: 'Booking not found' });
+        }
+
+        const booking = bookingCheck[0];
+
+        // Update booking status
+        await db.query('UPDATE bookings SET booking_status = ?, updated_at = NOW() WHERE booking_id = ?', [status, bookingId]);
+
+        res.json({
+            message: `Booking status updated to ${status}`,
+            booking_id: bookingId,
+            status: status
+        });
+
+    } catch (err) {
+        console.error('Error updating booking status:', err);
+        res.status(500).json({ error: 'Failed to update booking status' });
+    }
+});
+
 module.exports = router;

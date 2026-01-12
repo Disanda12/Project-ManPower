@@ -87,3 +87,18 @@ export const assignWorkersToBooking = async (bookingId: number, workerIds: numbe
         throw error.response?.data?.message || "Failed to assign workers";
     }
 };
+
+// Update booking status (admin only)
+export const updateBookingStatus = async (bookingId: number, status: string): Promise<any> => {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await axios.put(`${BASE_URL}/bookings/${bookingId}/status`, {
+            status
+        }, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        return response.data;
+    } catch (error: any) {
+        throw error.response?.data?.message || "Failed to update booking status";
+    }
+};

@@ -9,9 +9,10 @@ import {
   Download,
   Users,
   UserCheck,
-  X
+  X,
+  Check
 } from 'lucide-react';
-import { getAllBookings, assignWorkersToBooking } from '../../../api/bookingService';
+import { getAllBookings, assignWorkersToBooking, updateBookingStatus } from '../../../api/bookingService';
 import { getAllUsers } from '../../../api/userService';
 import { notify } from '../../utils/notify';
 
@@ -21,6 +22,7 @@ const AdminBookingManager = () => {
   const [loading, setLoading] = useState(true);
   const [workers, setWorkers] = useState<any[]>([]);
   const [showAssignModal, setShowAssignModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [selectedWorkers, setSelectedWorkers] = useState<number[]>([]);
   const [assigning, setAssigning] = useState(false);
@@ -118,6 +120,25 @@ const AdminBookingManager = () => {
       notify.error(error || 'Failed to assign workers');
     } finally {
       setAssigning(false);
+    }
+  };
+
+  const handleViewDetails = (booking: any) => {
+    setSelectedBooking(booking);
+    setShowDetailsModal(true);
+  };
+
+  const handleCompleteBooking = async (booking: any) => {
+    if (!window.confirm(`Are you sure you want to mark this booking as completed?\n\nBooking ID: #${booking.booking_id}\nService: ${booking.service_type || booking.service_name}\nCustomer: ${booking.customer_name || (booking.customer_first_name && booking.customer_last_name ? `${booking.customer_first_name} ${booking.customer_last_name}` : 'N/A')}`)) {
+      return;
+    }
+
+    try {
+      await updateBookingStatus(booking.booking_id, 'completed');
+      notify.success('Booking marked as completed successfully!');
+      fetchBookings(); // Refresh the list
+    } catch (error: any) {
+      notify.error(error || 'Failed to complete booking');
     }
   };
 
@@ -397,7 +418,8 @@ const AdminBookingManager = () => {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       whileHover={{ backgroundColor: '#f8fafc' }}
-                      className="transition-colors group"
+                      className="transition-colors group cursor-pointer"
+                      onClick={() => handleViewDetails(booking)}
                     >
                         <td className="p-4 font-mono text-sm font-bold text-blue-600">#{booking.booking_id || booking.id}</td>
                         <td className="p-4">
@@ -469,6 +491,18 @@ const AdminBookingManager = () => {
                                   <UserCheck size={14} />
                                   Assign
                                 </button>
+                              )}
+                              {(booking.booking_status === 'assigned' || booking.booking_status === 'in_progress') && (
+                                <>
+                                  <button
+                                    onClick={() => handleCompleteBooking(booking)}
+                                    className="flex items-center gap-1 px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded-lg transition-all"
+                                    title="Mark as Completed"
+                                  >
+                                    <Check size={14} />
+                                    Complete
+                                  </button>
+                                </>
                               )}
                             </div>
                           )}
@@ -636,6 +670,128 @@ const AdminBookingManager = () => {
                       className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-bold"
                     >
                       {assigning ? 'Assigning...' : `Assign ${selectedWorkers.length} Worker${selectedWorkers.length !== 1 ? 's' : ''}`}
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* --- BOOKING DETAILS MODAL --- */}
+        <AnimatePresence>
+          {showDetailsModal && selectedBooking && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl"
+              >
+                <div className="p-6 border-b border-slate-200">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-bold text-slate-900">Booking Details</h2>
+                    <button
+                      onClick={() => setShowDetailsModal(false)}
+                      className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                    >
+                      <X size={20} className="text-slate-500" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-6 max-h-[calc(90vh-120px)] overflow-y-auto">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Booking Info */}
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Booking Information</h3>
+                        <div className="space-y-2">
+                          <p><span className="font-medium">Booking ID:</span> #{selectedBooking.booking_id || selectedBooking.id}</p>
+                          <p><span className="font-medium">Service:</span> {selectedBooking.service_type || selectedBooking.service_name}</p>
+                          <p><span className="font-medium">Status:</span> 
+                            <span className={`ml-2 px-2 py-1 rounded-full text-xs font-bold border ${getStatusColor(selectedBooking.booking_status || selectedBooking.status)}`}>
+                              {selectedBooking.booking_status || selectedBooking.status}
+                            </span>
+                          </p>
+                          <p><span className="font-medium">Duration:</span> {selectedBooking.total_days || 1} day{(selectedBooking.total_days || 1) !== 1 ? 's' : ''}</p>
+                          <p><span className="font-medium">Workers Required:</span> {selectedBooking.worker_count || selectedBooking.number_of_workers || 0}</p>
+                        </div>
+                      </div>
+
+                      {/* Customer Info */}
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Customer Information</h3>
+                        <div className="space-y-2">
+                          <p><span className="font-medium">Name:</span> {selectedBooking.customer_name || 
+                             (selectedBooking.customer_first_name && selectedBooking.customer_last_name 
+                               ? `${selectedBooking.customer_first_name} ${selectedBooking.customer_last_name}`
+                               : 'N/A')}</p>
+                          <p><span className="font-medium">Booking Date:</span> {selectedBooking.booking_date ? new Date(selectedBooking.booking_date).toLocaleDateString() : 'N/A'}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Work Details */}
+                    <div className="space-y-4">
+                      {/* Dates */}
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Schedule</h3>
+                        <div className="space-y-2">
+                          <p><span className="font-medium">Start Date:</span> {selectedBooking.start_date ? new Date(selectedBooking.start_date).toLocaleDateString() : 'N/A'}</p>
+                          <p><span className="font-medium">End Date:</span> {selectedBooking.end_date ? new Date(selectedBooking.end_date).toLocaleDateString() : 'N/A'}</p>
+                        </div>
+                      </div>
+
+                      {/* Payment */}
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Payment Details</h3>
+                        <div className="space-y-2">
+                          <p><span className="font-medium">Total Amount:</span> LKR {selectedBooking.total_amount_lkr || 0}</p>
+                          <p><span className="font-medium">Advance Amount:</span> LKR {selectedBooking.advance_amount_lkr || 0}</p>
+                          <p><span className="font-medium">Remaining Amount:</span> LKR {selectedBooking.remaining_amount_lkr || 0}</p>
+                          <p><span className="font-medium">Payment Status:</span> {selectedBooking.payment_status || 'N/A'}</p>
+                        </div>
+                      </div>
+
+                      {/* Assigned Workers */}
+                      {selectedBooking.assigned_workers && (
+                        <div>
+                          <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Assigned Workers</h3>
+                          <div className="flex flex-wrap gap-2">
+                            {selectedBooking.assigned_workers.split(',').map((worker: string, idx: number) => (
+                              <span key={idx} className="bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs font-medium">
+                                {worker.trim()}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Work Description */}
+                  <div className="mt-6">
+                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Work Description</h3>
+                    <div className="bg-slate-50 p-4 rounded-lg">
+                      <p className="text-slate-700">{selectedBooking.work_description || 'No description provided'}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="p-6 border-t border-slate-200 bg-slate-50">
+                  <div className="flex gap-4">
+                    <button
+                      onClick={() => setShowDetailsModal(false)}
+                      className="flex-1 px-6 py-3 border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-100 transition-colors font-bold"
+                    >
+                      Close
                     </button>
                   </div>
                 </div>
