@@ -14,6 +14,7 @@ import { Link, useNavigate } from "react-router-dom";
 const NavigationBar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
   const navigate = useNavigate();
 
   // Logic: Check if logged in and redirect accordingly
@@ -68,6 +69,7 @@ const NavigationBar = () => {
       if (window.innerWidth >= 1024) { // lg breakpoint
         setMobileMenuOpen(false);
       }
+      setIsDesktop(window.innerWidth >= 1024);
     };
 
     window.addEventListener('resize', handleResize);
@@ -105,8 +107,10 @@ const NavigationBar = () => {
                 /* 1. DISPLAYED IF LOGGED IN: My Account Dropdown */
                 <div
                   className="relative py-2"
-                  onMouseEnter={() => setIsAccountOpen(true)}
-                  onMouseLeave={() => setIsAccountOpen(false)}
+                  {...(isDesktop ? {
+                    onMouseEnter: () => setIsAccountOpen(true),
+                    onMouseLeave: () => setIsAccountOpen(false),
+                  } : {})}
                 >
                   <button
                     onClick={() => setIsAccountOpen(!isAccountOpen)}
