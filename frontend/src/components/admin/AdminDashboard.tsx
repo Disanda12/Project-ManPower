@@ -8,7 +8,8 @@ import {
   Calendar,
   MessageSquare,
   Clock,
-  CheckCircle
+  CheckCircle,
+  Settings
 } from 'lucide-react';
 import { getAllUsers } from '../../api/userService';
 import { getAllBookings } from '../../api/bookingService';
@@ -250,7 +251,7 @@ const AdminDashboard: React.FC = () => {
         {/* Quick Actions */}
         <div className="mt-6 md:mt-8 bg-white rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-100 shadow-sm">
           <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4 md:mb-6">Quick Actions</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
             <button
               onClick={() => navigate('/admin/users')}
               className="flex items-center space-x-3 p-3 md:p-4 bg-blue-50 hover:bg-blue-100 rounded-lg md:rounded-xl transition-colors"
@@ -281,6 +282,14 @@ const AdminDashboard: React.FC = () => {
             >
               <MessageSquare className="w-4 h-4 md:w-5 md:h-5 text-pink-600 flex-shrink-0" />
               <span className="font-medium text-pink-900 text-sm md:text-base">Manage Feedbacks</span>
+            </button>
+
+            <button
+              onClick={() => navigate('/admin/settings')}
+              className="flex items-center space-x-3 p-3 md:p-4 bg-gray-50 hover:bg-gray-100 rounded-lg md:rounded-xl transition-colors"
+            >
+              <Settings className="w-4 h-4 md:w-5 md:h-5 text-gray-600 flex-shrink-0" />
+              <span className="font-medium text-gray-900 text-sm md:text-base">Settings</span>
             </button>
           </div>
         </div>

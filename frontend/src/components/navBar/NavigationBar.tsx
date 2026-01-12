@@ -8,6 +8,9 @@ import {
   Settings,
   LogOut,
   LayoutDashboard,
+  Calendar,
+  Briefcase,
+  Users
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -168,11 +171,19 @@ const NavigationBar = () => {
                                 <span>Admin Dashboard</span>
                               </Link>
                               <Link
-                                to="/admin/bookings"
+                                to="/admin/settings"
                                 className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00467f] transition-colors"
                                 onClick={() => setIsAccountOpen(false)}
                               >
                                 <Settings size={16} />
+                                <span>Settings</span>
+                              </Link>
+                              <Link
+                                to="/admin/bookings"
+                                className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00467f] transition-colors"
+                                onClick={() => setIsAccountOpen(false)}
+                              >
+                                <Calendar size={16} />
                                 <span>Manage Bookings</span>
                               </Link>
                               <Link
@@ -180,7 +191,7 @@ const NavigationBar = () => {
                                 className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00467f] transition-colors"
                                 onClick={() => setIsAccountOpen(false)}
                               >
-                                <User size={16} />
+                                <Users size={16} />
                                 <span>User Management</span>
                               </Link>
                               <Link
@@ -196,19 +207,21 @@ const NavigationBar = () => {
                                 className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00467f] transition-colors"
                                 onClick={() => setIsAccountOpen(false)}
                               >
-                                <Settings size={16} />
+                                <Briefcase size={16} />
                                 <span>Service Management</span>
                               </Link>
                             </>
                           )}
-                          <Link
-                            to="/settings"
-                            className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00467f] transition-colors"
-                            onClick={() => setIsAccountOpen(false)}
-                          >
-                            <Settings size={16} />
-                            <span>Settings</span>
-                          </Link>
+                          {!userRole && (
+                            <Link
+                              to="/settings"
+                              className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00467f] transition-colors"
+                              onClick={() => setIsAccountOpen(false)}
+                            >
+                              <Settings size={16} />
+                              <span>Settings</span>
+                            </Link>
+                          )}
                           <div className="border-t border-gray-100 my-1"></div>
                           <button
                             onClick={() => {

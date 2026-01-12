@@ -20,6 +20,7 @@ import UserManagement from './components/admin/userManagement/UserManagement';
 import WorkerManagement from './components/admin/workerManagement/WorkerManagement';
 import ServiceManagement from './components/admin/serviceManagement/ServiceManagement';
 import AdminDashboard from './components/admin/AdminDashboard';
+import AdminSettings from './components/admin/AdminSettings';
 import ScrollToTop from './components/ScrollToTop';
 
 function App() {
@@ -55,6 +56,7 @@ function App() {
             <Route path="/admin/users" element={<UserManagement />} />
             <Route path="/admin/workers" element={<WorkerManagement />} />
             <Route path="/admin/services" element={<ServiceManagement />} />
+            <Route path="/admin/settings" element={<AdminSettings />} />
           </Routes>
         </main>
 
