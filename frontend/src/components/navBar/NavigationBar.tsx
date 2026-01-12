@@ -7,6 +7,7 @@ import {
   History,
   Settings,
   LogOut,
+  LayoutDashboard,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -158,6 +159,14 @@ const NavigationBar = () => {
                           </Link>
                           {userRole === 'admin' && (
                             <>
+                              <Link
+                                to="/admin"
+                                className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00467f] transition-colors"
+                                onClick={() => setIsAccountOpen(false)}
+                              >
+                                <LayoutDashboard size={16} />
+                                <span>Admin Dashboard</span>
+                              </Link>
                               <Link
                                 to="/admin/bookings"
                                 className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00467f] transition-colors"
