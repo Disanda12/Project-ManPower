@@ -92,7 +92,7 @@ const WorkerManagement: React.FC = () => {
             service_id: worker.service_id?.toString() || '',
             experience_years: '', // Assuming not stored, or add if available
             bio: '', // Assuming not stored
-            is_available: true // Assuming default
+            is_available: (worker as { is_available?: boolean }).is_available ?? true
         });
         setShowCreateForm(true);
     };
