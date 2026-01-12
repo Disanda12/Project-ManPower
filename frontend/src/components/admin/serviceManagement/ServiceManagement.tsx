@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { getAllServices, addService, updateService, deleteService } from '../../../api/serviceService';
 import { notify } from '../../utils/notify';
 
@@ -13,6 +15,7 @@ interface Service {
 }
 
 const ServiceManagement: React.FC = () => {
+    const navigate = useNavigate();
     const [services, setServices] = useState<Service[]>([]);
     const [loading, setLoading] = useState(true);
     const [showCreateForm, setShowCreateForm] = useState(false);
@@ -203,6 +206,18 @@ const ServiceManagement: React.FC = () => {
 
     return (
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+            
+            {/* Back Button */}
+            <div className="mb-6">
+                <button
+                    onClick={() => navigate('/admin')}
+                    className="flex items-center gap-2 text-slate-600 hover:text-slate-800 transition-colors"
+                >
+                    <ArrowLeft size={20} />
+                    <span className="font-medium">Back to Dashboard</span>
+                </button>
+            </div>
+            
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 gap-4">
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Service Management</h1>
                 <button

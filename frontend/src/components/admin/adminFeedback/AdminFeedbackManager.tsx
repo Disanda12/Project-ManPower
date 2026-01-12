@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Star, MessageSquare, User, Calendar, 
-  Check, X, Eye, EyeOff, AlertCircle 
+  Check, X, Eye, EyeOff, AlertCircle, ArrowLeft
 } from 'lucide-react';
 
 const AdminFeedbackManager = () => {
+  const navigate = useNavigate();
   // Added 'status' to mock data
   const [feedbacks, setFeedbacks] = useState([
     { id: 1, customer: "John Carter", rating: 5, comment: "Exceptional skill level!", date: "2025-12-10", service: "Masonry", status: 'pending' },
@@ -31,8 +33,20 @@ const AdminFeedbackManager = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-28 pb-20 px-4 md:px-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-slate-50 pt-10 pb-20 px-4 md:px-8">
+      <div className="max-w-7xl px-4 md:px-10 mx-auto">
+        
+        {/* Back Button */}
+        <div className="mb-6">
+          <button
+            onClick={() => navigate('/admin')}
+            className="flex items-center gap-2 text-slate-600 hover:text-slate-800 transition-colors"
+          >
+            <ArrowLeft size={20} />
+            <span className="font-medium">Back to Dashboard</span>
+          </button>
+        </div>
+        
         <div className="mb-10">
           <h1 className="text-3xl font-black text-slate-900 flex items-center gap-3">
             <MessageSquare className="text-blue-600" size={32} />

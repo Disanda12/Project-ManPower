@@ -11,7 +11,8 @@ import {
   Users,
   UserCheck,
   X,
-  Check
+  Check,
+  ArrowLeft
 } from 'lucide-react';
 import { getAllBookings, assignWorkersToBooking, updateBookingStatus } from '../../../api/bookingService';
 import { getAllUsers } from '../../../api/userService';
@@ -267,6 +268,17 @@ const AdminBookingManager = () => {
   return (
     <div className="min-h-screen bg-slate-50 pt-10 pb-20 px-4 md:px-8">
       <div className="max-w-7xl mx-auto px-4 md:px-8">
+        
+        {/* Back Button */}
+        <div className="mb-6">
+          <button
+            onClick={() => navigate('/admin')}
+            className="flex items-center gap-2 text-slate-600 hover:text-slate-800 transition-colors"
+          >
+            <ArrowLeft size={20} />
+            <span className="font-medium">Back to Dashboard</span>
+          </button>
+        </div>
         
         {/* --- HEADER --- */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">

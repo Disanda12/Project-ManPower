@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { getAllUsers, deleteUser, createUser, updateUser } from '../../../api/userService';
 import { getAllServices } from '../../../api/serviceService';
 import { notify } from '../../utils/notify';
@@ -214,6 +215,18 @@ const WorkerManagement: React.FC = () => {
 
     return (
         <div className="container max-w-7xl mx-auto px-4 md:px-8 py-8">
+            
+            {/* Back Button */}
+            <div className="mb-6">
+                <button
+                    onClick={() => navigate('/admin')}
+                    className="flex items-center gap-2 text-slate-600 hover:text-slate-800 transition-colors"
+                >
+                    <ArrowLeft size={20} />
+                    <span className="font-medium">Back to Dashboard</span>
+                </button>
+            </div>
+            
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
                 <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">Worker Management</h1>
                 <button

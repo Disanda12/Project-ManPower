@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   User,
@@ -8,7 +9,8 @@ import {
   Save,
   Mail,
   Phone,
-  MapPin
+  MapPin,
+  ArrowLeft
 } from 'lucide-react';
 import { notify } from '../utils/notify';
 
@@ -40,6 +42,7 @@ interface AdminSettings {
 }
 
 const AdminSettings: React.FC = () => {
+  const navigate = useNavigate();
   const [settings, setSettings] = useState<AdminSettings>({
     profile: {
       firstName: '',
@@ -135,6 +138,18 @@ const AdminSettings: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 pt-10 pb-10 md:pb-20 px-4 md:px-8">
       <div className="max-w-7xl px-4 md:px-10 mx-auto">
+        
+        {/* Back Button */}
+        <div className="mb-6">
+          <button
+            onClick={() => navigate('/admin')}
+            className="flex items-center gap-2 text-slate-600 hover:text-slate-800 transition-colors"
+          >
+            <ArrowLeft size={20} />
+            <span className="font-medium">Back to Dashboard</span>
+          </button>
+        </div>
+        
         {/* Header */}
         <div className="mb-6 md:mb-8">
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Admin Settings</h1>
