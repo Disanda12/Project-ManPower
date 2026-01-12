@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
@@ -17,6 +18,7 @@ import { getAllUsers } from '../../../api/userService';
 import { notify } from '../../utils/notify';
 
 const AdminBookingManager = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,7 +41,7 @@ const AdminBookingManager = () => {
       setBookings(bookingsData);
     } catch (error: any) {
       if (error.includes('Access denied') || error.includes('Invalid token') || error.includes('Admin access required')) {
-        notify.error('You must be logged in as an admin to access this page');
+        navigate('/login');
       } else {
         notify.error('Failed to fetch bookings');
       }
@@ -484,7 +486,10 @@ const AdminBookingManager = () => {
                             <div className="flex justify-end gap-2">
                               {(booking.booking_status === 'pending' || booking.booking_status === 'confirmed') && !booking.assigned_workers && (
                                 <button
-                                  onClick={() => handleAssignWorkers(booking)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAssignWorkers(booking);
+                                  }}
                                   className="flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition-all"
                                   title="Assign Workers"
                                 >
@@ -495,7 +500,10 @@ const AdminBookingManager = () => {
                               {(booking.booking_status === 'assigned' || booking.booking_status === 'in_progress') && (
                                 <>
                                   <button
-                                    onClick={() => handleCompleteBooking(booking)}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleCompleteBooking(booking);
+                                    }}
                                     className="flex items-center gap-1 px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded-lg transition-all"
                                     title="Mark as Completed"
                                   >

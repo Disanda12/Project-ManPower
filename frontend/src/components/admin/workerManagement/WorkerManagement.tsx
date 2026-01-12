@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getAllUsers, deleteUser, createUser, updateUser } from '../../../api/userService';
 import { getAllServices } from '../../../api/serviceService';
 import { notify } from '../../utils/notify';
@@ -16,6 +17,7 @@ interface User {
 }
 
 const WorkerManagement: React.FC = () => {
+    const navigate = useNavigate();
     const [workers, setWorkers] = useState<User[]>([]);
     const [services, setServices] = useState<{service_id: number, service_name: string}[]>([]);
     const [loading, setLoading] = useState(true);
@@ -42,7 +44,7 @@ const WorkerManagement: React.FC = () => {
         const role = localStorage.getItem('role');
         
         if (!token || role !== 'admin') {
-            notify.error('You must be logged in as an admin to access this page');
+            navigate('/login');
             setLoading(false);
             return;
         }
@@ -58,7 +60,7 @@ const WorkerManagement: React.FC = () => {
             setWorkers(workerData);
         } catch (error: any) {
             if (error.includes('Access denied') || error.includes('Invalid token') || error.includes('Admin access required')) {
-                notify.error('You must be logged in as an admin to access this page');
+                navigate('/login');
             } else {
                 notify.error('Failed to fetch workers');
             }
@@ -109,7 +111,7 @@ const WorkerManagement: React.FC = () => {
         const role = localStorage.getItem('role');
         
         if (!token || role !== 'admin') {
-            notify.error('You must be logged in as an admin to delete workers');
+            navigate('/login');
             return;
         }
         
@@ -132,7 +134,7 @@ const WorkerManagement: React.FC = () => {
         const role = localStorage.getItem('role');
         
         if (!token || role !== 'admin') {
-            notify.error('You must be logged in as an admin to manage workers');
+            navigate('/login');
             return;
         }
         
