@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
   Filter,
-  MoreVertical,
   CheckCircle,
   Clock,
   ExternalLink,
@@ -471,9 +470,6 @@ const AdminBookingManager = () => {
                                   Assign
                                 </button>
                               )}
-                              <button className="p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-all">
-                                <MoreVertical size={18} />
-                              </button>
                             </div>
                           )}
                         </td>

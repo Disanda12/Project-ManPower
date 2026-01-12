@@ -21,6 +21,7 @@ const WorkerManagement: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [editingWorker, setEditingWorker] = useState<User | null>(null);
+    const [selectedWorker, setSelectedWorker] = useState<User | null>(null);
     const [newWorker, setNewWorker] = useState({
         firstName: '',
         lastName: '',
@@ -92,6 +93,14 @@ const WorkerManagement: React.FC = () => {
             is_available: true // Assuming default
         });
         setShowCreateForm(true);
+    };
+
+    const handleViewWorkerDetails = (worker: User) => {
+        setSelectedWorker(worker);
+    };
+
+    const handleCloseDetails = () => {
+        setSelectedWorker(null);
     };
 
     const handleDeleteWorker = async (workerId: number) => {
@@ -358,7 +367,7 @@ const WorkerManagement: React.FC = () => {
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                         {workers.map((worker) => (
-                            <tr key={worker.user_id}>
+                            <tr key={worker.user_id} onClick={() => handleViewWorkerDetails(worker)} className="cursor-pointer hover:bg-gray-50">
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     {worker.first_name} {worker.last_name}
                                 </td>
@@ -376,13 +385,19 @@ const WorkerManagement: React.FC = () => {
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <div className="flex space-x-2">
                                         <button
-                                            onClick={() => handleEditWorker(worker)}
+                                            onClick={(e) => {
+                                                e.stopPropagation(); // Prevent row click
+                                                handleEditWorker(worker);
+                                            }}
                                             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded"
                                         >
                                             Edit
                                         </button>
                                         <button
-                                            onClick={() => handleDeleteWorker(worker.user_id)}
+                                            onClick={(e) => {
+                                                e.stopPropagation(); // Prevent row click
+                                                handleDeleteWorker(worker.user_id);
+                                            }}
                                             className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded"
                                         >
                                             Delete
@@ -397,7 +412,7 @@ const WorkerManagement: React.FC = () => {
                 {/* Mobile Cards */}
                 <div className="lg:hidden">
                     {workers.map((worker) => (
-                        <div key={worker.user_id} className="p-4 border-b border-gray-200 last:border-b-0">
+                        <div key={worker.user_id} onClick={() => handleViewWorkerDetails(worker)} className="p-4 border-b border-gray-200 last:border-b-0 cursor-pointer hover:bg-gray-50">
                             <div className="flex justify-between items-start mb-3">
                                 <div>
                                     <h3 className="font-semibold text-gray-900">
@@ -412,13 +427,19 @@ const WorkerManagement: React.FC = () => {
                             </div>
                             <div className="flex justify-end space-x-2">
                                 <button
-                                    onClick={() => handleEditWorker(worker)}
+                                    onClick={(e) => {
+                                        e.stopPropagation(); // Prevent card click
+                                        handleEditWorker(worker);
+                                    }}
                                     className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded text-sm"
                                 >
                                     Edit
                                 </button>
                                 <button
-                                    onClick={() => handleDeleteWorker(worker.user_id)}
+                                    onClick={(e) => {
+                                        e.stopPropagation(); // Prevent card click
+                                        handleDeleteWorker(worker.user_id);
+                                    }}
                                     className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
                                 >
                                     Delete
@@ -428,6 +449,63 @@ const WorkerManagement: React.FC = () => {
                     ))}
                 </div>
             </div>
+
+            {/* Worker Details Modal */}
+            {selectedWorker && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+                        <div className="p-6">
+                            <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-xl font-bold text-[#00467f]">Worker Details</h2>
+                                <button
+                                    onClick={handleCloseDetails}
+                                    className="text-gray-500 hover:text-gray-700 text-2xl"
+                                >
+                                    ×
+                                </button>
+                            </div>
+                            <div className="space-y-3">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Full Name</label>
+                                    <p className="text-gray-900">{selectedWorker.first_name} {selectedWorker.last_name}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Email</label>
+                                    <p className="text-gray-900">{selectedWorker.email}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Phone</label>
+                                    <p className="text-gray-900">{selectedWorker.phone}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Address</label>
+                                    <p className="text-gray-900 whitespace-pre-wrap">{selectedWorker.address}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">User Type</label>
+                                    <p className="text-gray-900 capitalize">{selectedWorker.user_type}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Service</label>
+                                    <p className="text-gray-900">{selectedWorker.service_name || 'Not Assigned'}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Worker ID</label>
+                                    <p className="text-gray-900">{selectedWorker.user_id}</p>
+                                </div>
+                            </div>
+                            <div className="mt-6 flex justify-end">
+                                <button
+                                    onClick={handleCloseDetails}
+                                    className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
