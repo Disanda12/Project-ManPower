@@ -269,7 +269,7 @@ const ServiceManagement: React.FC = () => {
                                     Available
                                 </label>
                                 <select
-                                    value={newService.is_available.toString()}
+                                    value={newService.is_available ? "true" : "false"}
                                     onChange={(e) => setNewService({...newService, is_available: e.target.value === 'true'})}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                                 >
@@ -329,11 +329,11 @@ const ServiceManagement: React.FC = () => {
                                 <div key={service.service_id} onClick={() => handleViewServiceDetails(service)} className="p-4 hover:bg-gray-50 cursor-pointer">
                                     <div className="flex justify-between items-start mb-2">
                                         <div className="flex-1">
-                                            <h3 className="text-sm font-medium text-gray-900">
+                                            <h3 className="text-base font-medium text-gray-900">
                                                 {service.service_name}
                                             </h3>
                                             {service.description && (
-                                                <p className="text-sm text-gray-500 mt-1">
+                                                <p className="text-base text-gray-500 mt-1">
                                                     {service.description}
                                                 </p>
                                             )}
@@ -347,7 +347,7 @@ const ServiceManagement: React.FC = () => {
                                         </span>
                                     </div>
 
-                                    <div className="flex justify-between items-center text-sm text-gray-600 mb-3">
+                                    <div className="flex justify-between items-center text-base text-gray-600 mb-3">
                                         <span>Daily Rate: <span className="font-medium">LKR {service.daily_rate_lkr.toLocaleString()}</span></span>
                                         <span>Advance: <span className="font-medium">{service.advance_percentage}%</span></span>
                                     </div>
@@ -359,7 +359,7 @@ const ServiceManagement: React.FC = () => {
                                                 console.log('Edit button clicked for service:', service);
                                                 startEdit(service);
                                             }}
-                                            className="flex-1 bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded text-sm"
+                                            className="flex-1 bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded text-base"
                                         >
                                             Edit
                                         </button>
@@ -368,7 +368,7 @@ const ServiceManagement: React.FC = () => {
                                                 e.stopPropagation();
                                                 handleDeleteService(service.service_id);
                                             }}
-                                            className="flex-1 bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
+                                            className="flex-1 bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-base"
                                         >
                                             Delete
                                         </button>
@@ -406,20 +406,20 @@ const ServiceManagement: React.FC = () => {
                                 <tr key={service.service_id} onClick={() => handleViewServiceDetails(service)} className="hover:bg-gray-50 cursor-pointer">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div>
-                                            <div className="text-sm font-medium text-gray-900">
+                                            <div className="text-base font-medium text-gray-900">
                                                 {service.service_name}
                                             </div>
                                             {service.description && (
-                                                <div className="text-sm text-gray-500">
+                                                <div className="text-base text-gray-500">
                                                     {service.description}
                                                 </div>
                                             )}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
                                         LKR {service.daily_rate_lkr.toLocaleString()}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
                                         {service.advance_percentage}%
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
@@ -431,7 +431,7 @@ const ServiceManagement: React.FC = () => {
                                             {service.is_available ? 'Available' : 'Unavailable'}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <td className="px-6 py-4 whitespace-nowrap text-base font-medium">
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
