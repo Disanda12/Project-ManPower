@@ -31,7 +31,6 @@ const WorkerManagement: React.FC = () => {
         service_id: '',
         experience_years: '',
         bio: '',
-        profile_image: '',
         is_available: true
     });
 
@@ -136,7 +135,6 @@ const WorkerManagement: React.FC = () => {
                 service_id: '',
                 experience_years: '',
                 bio: '',
-                profile_image: '',
                 is_available: true
             });
             fetchWorkers(); // Refresh the list
@@ -266,13 +264,6 @@ const WorkerManagement: React.FC = () => {
                                 rows={3}
                             />
                         </div>
-                        <input
-                            type="url"
-                            placeholder="Profile Image URL (Optional)"
-                            value={newWorker.profile_image}
-                            onChange={(e) => setNewWorker({...newWorker, profile_image: e.target.value})}
-                            className="border border-gray-300 rounded px-3 py-2"
-                        />
                         <div className="flex items-center">
                             <input
                                 type="checkbox"

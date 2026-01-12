@@ -52,21 +52,32 @@ const AdminBookingManager = () => {
   const fetchWorkers = async () => {
     try {
       const usersData = await getAllUsers();
-      // Filter to only workers and ensure they have service information
-      const workersData = usersData.filter((user: any) =>
-        user.user_type === 'worker' && user.service_id && user.service_name
-      );
+      // Filter to only workers - include all workers even if they don't have service info
+      const workersData = usersData.filter((user: any) => user.user_type === 'worker');
+      console.log('Fetched workers:', workersData.map(w => ({ id: w.user_id, service_id: w.service_id, service_name: w.service_name })));
       setWorkers(workersData);
     } catch (error) {
       console.error('Failed to fetch workers:', error);
     }
   };
 
-  const handleAssignWorkers = (booking: any) => {
+  const handleAssignWorkers = async (booking: any) => {
+    // Refresh workers list to ensure newly added workers are available
+    await fetchWorkers();
+
+    console.log('Booking service_id:', booking.service_id, typeof booking.service_id);
+    console.log('Available workers:', workers.map(w => ({ id: w.user_id, service_id: w.service_id, service_name: w.service_name })));
+
     // Filter workers by the service type of the booking
-    const relevantWorkers = workers.filter((worker: any) =>
-      worker.service_id == booking.service_id  // Use loose equality to handle type differences
-    );
+    const relevantWorkers = workers.filter((worker: any) => {
+      const workerServiceId = parseInt(worker.service_id, 10);
+      const bookingServiceId = parseInt(booking.service_id, 10);
+      const match = workerServiceId === bookingServiceId;
+      console.log(`Worker ${worker.user_id} (${worker.service_name}): service_id=${worker.service_id} -> ${workerServiceId}, booking_service_id=${booking.service_id} -> ${bookingServiceId}, match=${match}`);
+      return match && worker.service_id && worker.service_name; // Only include workers with valid service info
+    });
+
+    console.log('Relevant workers found:', relevantWorkers.length);
 
     // If no workers found for this service, show all workers as fallback
     const workersToShow = relevantWorkers.length > 0 ? relevantWorkers : workers;
@@ -105,6 +116,7 @@ const AdminBookingManager = () => {
       setSelectedBooking(null);
       setSelectedWorkers([]);
       fetchBookings(); // Refresh the list
+      fetchWorkers(); // Refresh workers list in case availability changed
     } catch (error: any) {
       notify.error(error || 'Failed to assign workers');
     } finally {
