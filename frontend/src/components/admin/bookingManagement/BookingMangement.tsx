@@ -4,8 +4,6 @@ import {
   Search,
   Filter,
   MoreVertical,
-  Edit3,
-  Trash2,
   CheckCircle,
   Clock,
   ExternalLink,
@@ -27,7 +25,7 @@ const AdminBookingManager = () => {
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [selectedWorkers, setSelectedWorkers] = useState<number[]>([]);
   const [assigning, setAssigning] = useState(false);
-  const [activeTab, setActiveTab] = useState<'pending' | 'assigned'>('pending');
+  const [activeTab, setActiveTab] = useState<'pending' | 'assigned' | 'history'>('pending');
 
   useEffect(() => {
     fetchBookings();
@@ -130,6 +128,8 @@ const AdminBookingManager = () => {
       case 'pending': return 'bg-amber-100 text-amber-700 border-amber-200';
       case 'assigned': return 'bg-purple-100 text-purple-700 border-purple-200';
       case 'in_progress': return 'bg-orange-100 text-orange-700 border-orange-200';
+      case 'completed': return 'bg-green-100 text-green-700 border-green-200';
+      case 'cancelled': return 'bg-red-100 text-red-700 border-red-200';
       default: return 'bg-gray-100 text-gray-700';
     }
   };
@@ -139,18 +139,40 @@ const AdminBookingManager = () => {
     const pending = bookings.filter(b => b.booking_status === 'pending').length;
     const confirmed = bookings.filter(b => b.booking_status === 'confirmed').length;
     const assigned = bookings.filter(b => b.booking_status === 'assigned').length;
+    const inProgress = bookings.filter(b => b.booking_status === 'in_progress').length;
+    const completed = bookings.filter(b => b.booking_status === 'completed').length;
+    const cancelled = bookings.filter(b => b.booking_status === 'cancelled').length;
 
-    return { total, pending, confirmed, assigned };
+    return { total, pending, confirmed, assigned, inProgress, completed, cancelled };
   };
 
   const stats = getStatusStats();
 
   const filteredBookings = bookings.filter((booking: any) => {
+    // Apply tab filter
+    let matchesTab = false;
     if (activeTab === 'pending') {
-      return booking.booking_status === 'pending' || booking.booking_status === 'confirmed';
-    } else {
-      return booking.booking_status === 'assigned';
+      matchesTab = booking.booking_status === 'pending' || booking.booking_status === 'confirmed';
+    } else if (activeTab === 'assigned') {
+      matchesTab = booking.booking_status === 'assigned' || booking.booking_status === 'in_progress';
+    } else if (activeTab === 'history') {
+      matchesTab = true; // Show all bookings in history
     }
+
+    // Apply search filter
+    let matchesSearch = true;
+    if (searchTerm.trim()) {
+      const searchLower = searchTerm.toLowerCase();
+      const bookingId = String(booking.booking_id || booking.id || '');
+      const customerName = (booking.customer_name || 
+                           (booking.customer_first_name && booking.customer_last_name 
+                             ? `${booking.customer_first_name} ${booking.customer_last_name}`
+                             : '')).toLowerCase();
+      
+      matchesSearch = bookingId.includes(searchLower) || customerName.includes(searchLower);
+    }
+
+    return matchesTab && matchesSearch;
   });
 
   return (
@@ -161,12 +183,14 @@ const AdminBookingManager = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div>
             <h1 className="text-3xl font-extrabold text-slate-900">
-              {activeTab === 'pending' ? 'Worker Assignment' : 'Assigned Bookings'}
+              {activeTab === 'pending' ? 'Worker Assignment' : activeTab === 'assigned' ? 'Active Bookings' : 'Order History'}
             </h1>
             <p className="text-slate-500 mt-1">
               {activeTab === 'pending' 
                 ? 'Assign workers to customer booking requests' 
-                : 'View and manage assigned bookings with details'
+                : activeTab === 'assigned'
+                ? 'View and manage active bookings with assigned workers'
+                : 'View all booking orders by users'
               }
             </p>
           </div>
@@ -183,8 +207,8 @@ const AdminBookingManager = () => {
                 { label: 'Total Bookings', value: stats.total.toString(), icon: ExternalLink, color: 'text-blue-600' },
                 { label: 'Awaiting Workers', value: stats.pending.toString(), icon: Clock, color: 'text-amber-500' },
                 { label: 'Ready to Assign', value: stats.confirmed.toString(), icon: CheckCircle, color: 'text-emerald-500' },
-                { label: 'Assigned', value: stats.assigned.toString(), icon: UserCheck, color: 'text-purple-600' },
-                { label: 'Total Workers', value: workers.length.toString(), icon: Users, color: 'text-indigo-600' },
+                { label: 'Active', value: (stats.assigned + stats.inProgress).toString(), icon: UserCheck, color: 'text-purple-600' },
+                { label: 'Completed', value: stats.completed.toString(), icon: CheckCircle, color: 'text-green-600' },
             ].map((stat) => (
                 <div key={stat.label} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
                     <div className="flex justify-between items-start">
@@ -218,7 +242,17 @@ const AdminBookingManager = () => {
                 : 'text-slate-600 hover:text-slate-800'
             }`}
           >
-            Assigned Bookings ({stats.assigned})
+            Active Bookings ({stats.assigned + stats.inProgress})
+          </button>
+          <button
+            onClick={() => setActiveTab('history')}
+            className={`px-6 py-2 rounded-lg font-bold text-sm transition-all ${
+              activeTab === 'history'
+                ? 'bg-white text-slate-900 shadow-sm'
+                : 'text-slate-600 hover:text-slate-800'
+            }`}
+          >
+            Order History ({bookings.length})
           </button>
         </div>
 
@@ -230,6 +264,7 @@ const AdminBookingManager = () => {
               type="text" 
               placeholder="Search by Booking ID or Customer..." 
               className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition"
+              value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
@@ -247,17 +282,20 @@ const AdminBookingManager = () => {
                   <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Booking ID</th>
                   <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Customer</th>
                   <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Service</th>
+                  <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Duration</th>
                   <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-widest">
-                    {activeTab === 'pending' ? 'Required Workers' : 'Assigned Workers'}
+                    {activeTab === 'history' ? 'Workers' : 'Assigned Workers'}
                   </th>
                   <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Status</th>
-                  <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right">Actions</th>
+                  <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right">
+                    {activeTab === 'history' ? 'Last Updated' : 'Actions'}
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {loading ? (
                   <tr>
-                    <td colSpan={6} className="p-8 text-center">
+                    <td colSpan={7} className="p-8 text-center">
                       <div className="flex items-center justify-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                         <span className="ml-2 text-slate-500">Loading bookings...</span>
@@ -266,16 +304,18 @@ const AdminBookingManager = () => {
                   </tr>
                 ) : filteredBookings.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="p-8 text-center">
+                    <td colSpan={7} className="p-8 text-center">
                       <div className="text-slate-400">
                         <Users size={48} className="mx-auto mb-4 opacity-50" />
                         <p className="text-lg font-medium">
-                          {activeTab === 'pending' ? 'No pending bookings' : 'No assigned bookings'}
+                          {activeTab === 'pending' ? 'No pending bookings' : activeTab === 'assigned' ? 'No active bookings' : 'No booking orders found'}
                         </p>
                         <p className="text-sm">
                           {activeTab === 'pending' 
                             ? 'Waiting for customer bookings to assign workers' 
-                            : 'No bookings have been assigned yet'
+                            : activeTab === 'assigned'
+                            ? 'No bookings are currently active'
+                            : 'No booking orders have been placed yet'
                           }
                         </p>
                       </div>
@@ -302,10 +342,21 @@ const AdminBookingManager = () => {
                         </td>
                         <td className="p-4 text-slate-600 font-medium">{booking.service_type || booking.service_name || booking.serviceName || 'N/A'}</td>
                         <td className="p-4">
+                          <div className="text-sm font-medium text-slate-800">
+                            {booking.total_days || 1} day{booking.total_days !== 1 ? 's' : ''}
+                          </div>
+                          <div className="text-xs text-slate-500">
+                            {booking.start_date && booking.end_date ? 
+                              `${new Date(booking.start_date).toLocaleDateString()} - ${new Date(booking.end_date).toLocaleDateString()}` 
+                              : 'N/A'
+                            }
+                          </div>
+                        </td>
+                        <td className="p-4">
                           <span className="bg-slate-100 px-2 py-1 rounded text-xs font-bold text-slate-600">
                             {booking.worker_count || booking.number_of_workers || booking.requiredWorkers || 0} Workers
                           </span>
-                          {booking.assigned_workers && booking.booking_status === 'assigned' && (
+                          {activeTab !== 'history' && booking.assigned_workers && booking.booking_status === 'assigned' && (
                             <div className="mt-1 text-xs text-slate-500">
                               <div className="font-medium">Assigned Workers:</div>
                               <div className="mt-1">
@@ -315,6 +366,16 @@ const AdminBookingManager = () => {
                                   </span>
                                 ))}
                               </div>
+                              {booking.end_date && (
+                                <div className="mt-1 text-xs text-blue-600">
+                                  <span className="font-medium">Available again:</span> {new Date(booking.end_date).toLocaleDateString()}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          {activeTab === 'history' && booking.end_date && (
+                            <div className="mt-1 text-xs text-slate-500">
+                              Completed: {new Date(booking.end_date).toLocaleDateString()}
                             </div>
                           )}
                         </td>
@@ -324,21 +385,27 @@ const AdminBookingManager = () => {
                           </span>
                         </td>
                         <td className="p-4 text-right">
-                          <div className="flex justify-end gap-2">
-                            {(booking.booking_status === 'pending' || booking.booking_status === 'confirmed') && !booking.assigned_workers && (
-                              <button
-                                onClick={() => handleAssignWorkers(booking)}
-                                className="flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition-all"
-                                title="Assign Workers"
-                              >
-                                <UserCheck size={14} />
-                                Assign
+                          {activeTab === 'history' ? (
+                            <span className="text-sm text-slate-600">
+                              {booking.updated_at ? new Date(booking.updated_at).toLocaleDateString() : 'N/A'}
+                            </span>
+                          ) : (
+                            <div className="flex justify-end gap-2">
+                              {(booking.booking_status === 'pending' || booking.booking_status === 'confirmed') && !booking.assigned_workers && (
+                                <button
+                                  onClick={() => handleAssignWorkers(booking)}
+                                  className="flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition-all"
+                                  title="Assign Workers"
+                                >
+                                  <UserCheck size={14} />
+                                  Assign
+                                </button>
+                              )}
+                              <button className="p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-all">
+                                <MoreVertical size={18} />
                               </button>
-                            )}
-                            <button className="p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-all">
-                              <MoreVertical size={18} />
-                            </button>
-                          </div>
+                            </div>
+                          )}
                         </td>
                       </motion.tr>
                     ))
@@ -410,12 +477,29 @@ const AdminBookingManager = () => {
                         <span className="ml-2 font-medium">{selectedBooking.service_type || selectedBooking.service_name || 'N/A'}</span>
                       </div>
                       <div>
+                        <span className="text-slate-500">Duration:</span>
+                        <span className="ml-2 font-medium">
+                          {selectedBooking.total_days || 1} day{selectedBooking.total_days !== 1 ? 's' : ''}
+                          {selectedBooking.start_date && selectedBooking.end_date && (
+                            <span className="text-xs text-slate-500 block">
+                              {new Date(selectedBooking.start_date).toLocaleDateString()} - {new Date(selectedBooking.end_date).toLocaleDateString()}
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                      <div>
                         <span className="text-slate-500">Required Workers:</span>
                         <span className="ml-2 font-medium">{selectedBooking.number_of_workers}</span>
                       </div>
                       <div>
                         <span className="text-slate-500">Selected:</span>
                         <span className="ml-2 font-medium text-blue-600">{selectedWorkers.length}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-500">Workers Available Again:</span>
+                        <span className="ml-2 font-medium text-green-600">
+                          {selectedBooking.end_date ? new Date(selectedBooking.end_date).toLocaleDateString() : 'N/A'}
+                        </span>
                       </div>
                     </div>
                   </div>

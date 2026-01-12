@@ -181,7 +181,29 @@ async function seedDatabase() {
         end_date: '2026-01-20',
         total_amount_lkr: 12000,
         advance_amount_lkr: 6000,
-        status: 'confirmed'
+        status: 'completed'
+      },
+      {
+        customer_id: customerIds[2],
+        service_id: serviceMap['Gardening'],
+        number_of_workers: 1,
+        work_description: 'Garden maintenance and lawn mowing',
+        start_date: '2026-01-10',
+        end_date: '2026-01-10',
+        total_amount_lkr: 15000,
+        advance_amount_lkr: 7500,
+        status: 'completed'
+      },
+      {
+        customer_id: customerIds[0],
+        service_id: serviceMap['Plumbing'],
+        number_of_workers: 1,
+        work_description: 'Fix leaking pipes in kitchen',
+        start_date: '2026-01-05',
+        end_date: '2026-01-05',
+        total_amount_lkr: 20000,
+        advance_amount_lkr: 10000,
+        status: 'cancelled'
       }
     ];
 
