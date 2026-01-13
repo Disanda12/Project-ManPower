@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { getAllUsers, updateUserRole, deleteUser } from '../../../api/userService';
-import { registerUser } from '../../../api/authService';
+import { getAllUsers, updateUserRole, deleteUser, createUser } from '../../../api/userService';
 import { notify } from '../../utils/notify';
 
 interface User {
@@ -73,7 +72,7 @@ const UserManagement: React.FC = () => {
     const handleCreateUser = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await registerUser(newUser);
+            await createUser(newUser);
             notify.success('User created successfully');
             setShowCreateForm(false);
             setNewUser({

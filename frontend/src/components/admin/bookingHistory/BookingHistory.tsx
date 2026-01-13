@@ -10,10 +10,11 @@ import {
   MapPin,
   XCircle,
   RefreshCw,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
-import { getCustomerBookings, getAllBookings } from '../../api/bookingService';
-import { notify } from '../utils/notify';
+import { getCustomerBookings, getAllBookings } from '../../../api/bookingService';
+import { notify } from '../../utils/notify';
 
 const OrderHistory = () => {
   const [activeTab, setActiveTab] = useState<'Active' | 'Completed'>('Active');
