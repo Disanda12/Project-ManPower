@@ -12,21 +12,26 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      const data = await loginUser({ email, password });
-      notify.success(`Welcome back, ${data.name}!`);
+  try {
+    const data = await loginUser({ email, password });
+    notify.success(`Welcome back, ${data.name}!`);
 
-      // 1. Update Storage
-      window.dispatchEvent(new Event("storage"));
+    // Sync the Navbar
+    window.dispatchEvent(new Event("storage")); 
 
-      // 2. Determine Destination
-      // Check if there is a 'from' path in the background state
-      const from = location.state?.from?.pathname || "/";
+    // FIX START: Correctly identify the destination
+    // We check if location.state exists, then check for .from
+    const destination = location.state?.from || "/"; 
+    
+    console.log("Redirecting to:", destination); // Debug to see the path in console
 
+    // Use replace: true so they can't go 'back' into the login loop
+    navigate(destination, { replace: true });
+    // FIX END
       // 3. Logic: Admin always goes to dashboard, customers go to 'from'
       const destination = data.role === "admin" ? "/admin" : from;
 
@@ -39,6 +44,12 @@ const LoginPage = () => {
     }
   };
 
+  } catch (err: any) {
+    notify.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <motion.div
