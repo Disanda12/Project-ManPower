@@ -18,7 +18,7 @@ const NavigationBar = () => {
 
   // Logic: Check if logged in and redirect accordingly
 
- const handleJobSeekerClick = (e: React.MouseEvent) => {
+const handleJobSeekerClick = (e: React.MouseEvent) => {
   e.preventDefault();
   const isLoggedIn = localStorage.getItem("token");
 
@@ -112,18 +112,18 @@ const NavigationBar = () => {
                       >
                         <div className="bg-white border border-gray-200 shadow-xl rounded-lg py-2">
                           <Link
-                            to="/booking-histor"
+                            to="/booking-history"
                             className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00467f] transition-colors"
                           >
                             <History size={16} />
                             <span>Order History</span>
                           </Link>
                           <Link
-                            to="/settings"
+                            to="/profile"
                             className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00467f] transition-colors"
                           >
                             <Settings size={16} />
-                            <span>Settings</span>
+                            <span>Profile</span>
                           </Link>
                           <div className="border-t border-gray-100 my-1"></div>
                           <button
