@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { getAllUsers, updateUserRole, deleteUser, createUser } from '../../../api/userService';
+import { getAllUsers, updateUserRole, deleteUser } from '../../../api/userService';
 import { notify } from '../../utils/notify';
 
 interface User {
@@ -18,18 +18,12 @@ const UserManagement: React.FC = () => {
     const navigate = useNavigate();
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
-    const [showCreateForm, setShowCreateForm] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 8;
-    const [newUser, setNewUser] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        address: '',
-        password: '',
-        user_type: 'customer'
-    });
+    const [showDeletePopup, setShowDeletePopup] = useState(false);
+    const [deleteError, setDeleteError] = useState('');
+    const [userToDelete, setUserToDelete] = useState<number | null>(null);
+    const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
     useEffect(() => {
         fetchUsers();
@@ -58,35 +52,37 @@ const UserManagement: React.FC = () => {
     };
 
     const handleDeleteUser = async (userId: number) => {
-        if (window.confirm('Are you sure you want to delete this user?')) {
-            try {
-                await deleteUser(userId.toString());
-                notify.success('User deleted successfully');
-                fetchUsers(); // Refresh the list
-            } catch (error) {
-                notify.error('Failed to delete user');
-            }
+        setUserToDelete(userId);
+        try {
+            await deleteUser(userId.toString());
+            notify.success('User deleted successfully');
+            fetchUsers(); // Refresh the list
+            setUserToDelete(null);
+        } catch (error: any) {
+            setDeleteError('This customer cannot be deleted because there are workers currently assigned to their bookings. Please complete or cancel the bookings first.');
+            setShowDeletePopup(true);
         }
     };
 
-    const handleCreateUser = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            await createUser(newUser);
-            notify.success('User created successfully');
-            setShowCreateForm(false);
-            setNewUser({
-                firstName: '',
-                lastName: '',
-                email: '',
-                phone: '',
-                address: '',
-                password: '',
-                user_type: 'customer'
-            });
-            fetchUsers(); // Refresh the list
-        } catch (error) {
-            notify.error('Failed to create user');
+    const handleConfirmDelete = async () => {
+        setShowConfirmDelete(false);
+        if (userToDelete) {
+            await handleDeleteUser(userToDelete);
+        }
+    };
+
+    const handleForceDelete = async () => {
+        if (userToDelete) {
+            try {
+                await deleteUser(userToDelete.toString());
+                notify.success('User deleted successfully');
+                fetchUsers(); // Refresh the list
+                setShowDeletePopup(false);
+                setUserToDelete(null);
+                setDeleteError('');
+            } catch (error: any) {
+                notify.error('Force delete failed: ' + error.message);
+            }
         }
     };
 
@@ -113,83 +109,7 @@ const UserManagement: React.FC = () => {
             
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
                 <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">User Management</h1>
-                <button
-                    onClick={() => setShowCreateForm(!showCreateForm)}
-                    className="bg-[#00467f] hover:bg-[#003560] text-white font-bold py-2 px-4 rounded w-full lg:w-auto"
-                >
-                    {showCreateForm ? 'Cancel' : 'Create New User'}
-                </button>
             </div>
-
-            {showCreateForm && (
-                <div className="bg-white rounded-lg shadow-md p-4 lg:p-6 mb-8">
-                    <h2 className="text-lg lg:text-xl font-bold mb-4">Create New User</h2>
-                    <form onSubmit={handleCreateUser} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        <input
-                            type="text"
-                            placeholder="First Name"
-                            value={newUser.firstName}
-                            onChange={(e) => setNewUser({...newUser, firstName: e.target.value})}
-                            className="border border-gray-300 rounded px-3 py-2 w-full"
-                            required
-                        />
-                        <input
-                            type="text"
-                            placeholder="Last Name"
-                            value={newUser.lastName}
-                            onChange={(e) => setNewUser({...newUser, lastName: e.target.value})}
-                            className="border border-gray-300 rounded px-3 py-2 w-full"
-                            required
-                        />
-                        <input
-                            type="email"
-                            placeholder="Email"
-                            value={newUser.email}
-                            onChange={(e) => setNewUser({...newUser, email: e.target.value})}
-                            className="border border-gray-300 rounded px-3 py-2 w-full"
-                            required
-                        />
-                        <input
-                            type="tel"
-                            placeholder="Phone"
-                            value={newUser.phone}
-                            onChange={(e) => setNewUser({...newUser, phone: e.target.value})}
-                            className="border border-gray-300 rounded px-3 py-2 w-full"
-                            required
-                        />
-                        <textarea
-                            placeholder="Address"
-                            value={newUser.address}
-                            onChange={(e) => setNewUser({...newUser, address: e.target.value})}
-                            className="border border-gray-300 rounded px-3 py-2 w-full col-span-1 lg:col-span-2"
-                            rows={3}
-                            required
-                        />
-                        <input
-                            type="password"
-                            placeholder="Password"
-                            value={newUser.password}
-                            onChange={(e) => setNewUser({...newUser, password: e.target.value})}
-                            className="border border-gray-300 rounded px-3 py-2 w-full"
-                            required
-                        />
-                        <select
-                            value={newUser.user_type}
-                            onChange={(e) => setNewUser({...newUser, user_type: e.target.value})}
-                            className="border border-gray-300 rounded px-3 py-2 w-full"
-                        >
-                            <option value="customer">Customer</option>
-                            <option value="admin">Admin</option>
-                        </select>
-                        <button
-                            type="submit"
-                            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded w-full col-span-1 lg:col-span-2"
-                        >
-                            Create User
-                        </button>
-                    </form>
-                </div>
-            )}
 
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
                 {/* Desktop Table */}
@@ -264,6 +184,7 @@ const UserManagement: React.FC = () => {
                                     value={user.user_type}
                                     onChange={(e) => handleRoleChange(user.user_id, e.target.value)}
                                     className="border border-gray-300 rounded px-2 py-1 text-sm"
+                                    key={`desktop-role-${user.user_id}`}
                                 >
                                     <option value="customer">Customer</option>
                                     <option value="admin">Admin</option>
@@ -271,7 +192,10 @@ const UserManagement: React.FC = () => {
                             </div>
                             <div className="flex justify-end">
                                 <button
-                                    onClick={() => handleDeleteUser(user.user_id)}
+                                    onClick={() => {
+                                        setUserToDelete(user.user_id);
+                                        setShowConfirmDelete(true);
+                                    }}
                                     className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
                                 >
                                     Delete
@@ -303,6 +227,59 @@ const UserManagement: React.FC = () => {
                         >
                             Next
                         </button>
+                    </div>
+                </div>
+            )}
+            
+            {/* Confirm Delete Popup */}
+            {showConfirmDelete && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                        <h3 className="text-lg font-bold text-gray-800 mb-4">Confirm Delete</h3>
+                        <p className="text-gray-600 mb-4">
+                            Are you sure you want to delete this user? This action cannot be undone.
+                        </p>
+                        <div className="flex justify-end space-x-3">
+                            <button
+                                onClick={() => {
+                                    setShowConfirmDelete(false);
+                                    setUserToDelete(null);
+                                }}
+                                className="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleConfirmDelete}
+                                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
+            {/* Delete Error Popup */}
+            {showDeletePopup && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                        <h3 className="text-lg font-bold text-gray-800 mb-4">Cannot Delete User</h3>
+                        <div className="bg-red-50 border border-red-200 rounded p-4 mb-4">
+                            <p className="text-red-700">{deleteError}</p>
+                        </div>
+                        <div className="flex justify-end">
+                            <button
+                                onClick={() => {
+                                    setShowDeletePopup(false);
+                                    setDeleteError('');
+                                    setUserToDelete(null);
+                                }}
+                                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                            >
+                                OK
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

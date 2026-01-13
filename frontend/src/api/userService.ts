@@ -112,7 +112,7 @@ export const deleteUser = async (userId: string): Promise<any> => {
         });
         return response.data;
     } catch (error: any) {
-        throw error.response?.data?.message || "Failed to delete user";
+        throw error.response?.data?.error || error.response?.data?.message || "Failed to delete user";
     }
 };
 
