@@ -15,7 +15,7 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { getAllBookings, assignWorkersToBooking, updateBookingStatus } from '../../../api/bookingService';
-import { getAllUsers } from '../../../api/userService';
+import { getAllUsers } from '../../../api/UserService';
 import { notify } from '../../utils/notify';
 
 const AdminBookingManager = () => {

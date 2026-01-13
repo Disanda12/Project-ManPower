@@ -11,7 +11,7 @@ import {
   CheckCircle,
   Settings
 } from 'lucide-react';
-import { getAllUsers } from '../../api/userService';
+import { getAllUsers } from '../../api/UserService';
 import { getAllBookings } from '../../api/bookingService';
 import { getAllServices } from '../../api/serviceService';
 import { notify } from '../utils/notify';

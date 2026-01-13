@@ -1,26 +1,7 @@
-// src/api/serviceApi.ts
-import axios from 'axios';
-import { SERVICE_ENDPOINTS } from './urls';
-
-export interface Service {
-    service_id: number;
-    service_name: string;
-    description: string;
-    daily_rate_lkr: number;
-    advance_percentage: number;
-    is_available: boolean;
-}
-
-export const fetchAvailableServices = async (): Promise<Service[]> => {
-    try {
-        const response = await axios.get(SERVICE_ENDPOINTS.GET_ALL);
-        return response.data;
-    } catch (error: any) {
-        throw error.response?.data?.message || "Failed to load services";
 import axios from 'axios';
 import { BASE_URL } from './urls';
 
-interface Service {
+export interface Service {
     service_id: number;
     service_name: string;
     description?: string;
@@ -36,7 +17,7 @@ export const getAllServices = async (): Promise<Service[]> => {
         const response = await axios.get(`${BASE_URL}/services`);
         return response.data;
     } catch (error: any) {
-        throw error.response?.data?.message || "Failed to fetch services";
+        throw error.response?.data?.message || 'Failed to fetch services';
     }
 };
 
@@ -50,14 +31,18 @@ export const addService = async (serviceData: {
 }): Promise<{ message: string; service_id: number }> => {
     try {
         const token = localStorage.getItem('token');
-        const response = await axios.post(`${BASE_URL}/services`, serviceData, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
+        const response = await axios.post(
+            `${BASE_URL}/services`,
+            serviceData,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
         return response.data;
     } catch (error: any) {
-        throw error.response?.data?.message || "Failed to add service";
+        throw error.response?.data?.message || 'Failed to add service';
     }
 };
 
@@ -74,28 +59,37 @@ export const updateService = async (
 ): Promise<{ message: string }> => {
     try {
         const token = localStorage.getItem('token');
-        const response = await axios.put(`${BASE_URL}/services/${serviceId}`, serviceData, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
+        const response = await axios.put(
+            `${BASE_URL}/services/${serviceId}`,
+            serviceData,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
         return response.data;
     } catch (error: any) {
-        throw error.response?.data?.message || "Failed to update service";
+        throw error.response?.data?.message || 'Failed to update service';
     }
 };
 
 // Delete service (admin only)
-export const deleteService = async (serviceId: number): Promise<{ message: string }> => {
+export const deleteService = async (
+    serviceId: number
+): Promise<{ message: string }> => {
     try {
         const token = localStorage.getItem('token');
-        const response = await axios.delete(`${BASE_URL}/services/${serviceId}`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
+        const response = await axios.delete(
+            `${BASE_URL}/services/${serviceId}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
         return response.data;
     } catch (error: any) {
-        throw error.response?.data?.message || "Failed to delete service";
+        throw error.response?.data?.message || 'Failed to delete service';
     }
 };

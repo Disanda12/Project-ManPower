@@ -1,37 +1,9 @@
 import axios from 'axios';
-import { BOOKING_ENDPOINTS } from './urls';
-
-export interface BookingPayload {
-  customer_id: number;
-  service_id: number;
-  number_of_workers: number;
-  work_description: string;
-  start_date: string;
-  end_date: string;
-  total_amount_lkr: number;
-  advance_amount_lkr: number;
-}
-
-export const createBooking = async (payload: BookingPayload) => {
-  try {
-    const response = await axios.post(BOOKING_ENDPOINTS.CREATE, payload);
-    return response.data;
-  } catch (error: any) {
-    throw error.response?.data?.message || "Booking submission failed";
-  }
-};
-
-// src/api/bookingService.ts
-
-export const getUserBookings = async (userId: number) => {
-    try {
-        const response = await axios.get(BOOKING_ENDPOINTS.GET_USER_BOOKINGS(userId));
-        return response.data;
-    } catch (error: any) {
-        throw error.response?.data?.message || "Failed to load order history";
 import { BASE_URL } from './urls';
 
-interface BookingData {
+/* ===================== TYPES ===================== */
+
+export interface BookingPayload {
     service_id: number;
     number_of_workers: number;
     work_description: string;
@@ -39,10 +11,9 @@ interface BookingData {
     end_date: string;
     total_amount_lkr: number;
     advance_amount_lkr: number;
-    customer_id?: number; // Optional, used by admins to specify customer
 }
 
-interface Booking {
+export interface Booking {
     booking_id: number;
     customer_id: number;
     service_id: number;
@@ -64,71 +35,102 @@ interface Booking {
     updated_at: string;
 }
 
-// Create a new booking
-export const createBooking = async (bookingData: BookingData): Promise<any> => {
+/* ===================== API CALLS ===================== */
+
+// Create booking (customer)
+export const createBooking = async (
+    bookingData: BookingPayload
+): Promise<any> => {
     try {
         const token = localStorage.getItem('token');
-        const response = await axios.post(`${BASE_URL}/bookings`, bookingData, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await axios.post(
+            `${BASE_URL}/bookings`,
+            bookingData,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
         return response.data;
     } catch (error: any) {
-        throw error.response?.data?.message || "Failed to create booking";
+        throw error.response?.data?.message || 'Booking submission failed';
     }
 };
 
-// Get customer's bookings
+// Get logged-in customer's bookings
 export const getCustomerBookings = async (): Promise<Booking[]> => {
     try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`${BASE_URL}/bookings/my-bookings`, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await axios.get(
+            `${BASE_URL}/bookings/my-bookings`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
         return response.data;
     } catch (error: any) {
-        throw error.response?.data?.message || "Failed to fetch bookings";
+        throw error.response?.data?.message || 'Failed to load order history';
     }
 };
 
-// Get all bookings (admin only)
+// Get all bookings (admin)
 export const getAllBookings = async (): Promise<Booking[]> => {
     try {
         const token = localStorage.getItem('token');
         const response = await axios.get(`${BASE_URL}/bookings`, {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
         });
         return response.data;
     } catch (error: any) {
-        throw error.response?.data?.message || "Failed to fetch bookings";
+        throw error.response?.data?.message || 'Failed to fetch bookings';
     }
 };
 
-// Assign workers to a booking (admin only)
-export const assignWorkersToBooking = async (bookingId: number, workerIds: number[]): Promise<any> => {
+// Assign workers (admin)
+export const assignWorkersToBooking = async (
+    bookingId: number,
+    workerIds: number[]
+): Promise<any> => {
     try {
         const token = localStorage.getItem('token');
-        const response = await axios.put(`${BASE_URL}/bookings/${bookingId}/assign-workers`, {
-            workerIds
-        }, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await axios.put(
+            `${BASE_URL}/bookings/${bookingId}/assign-workers`,
+            { workerIds },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
         return response.data;
     } catch (error: any) {
-        throw error.response?.data?.message || "Failed to assign workers";
+        throw error.response?.data?.message || 'Failed to assign workers';
     }
 };
 
-// Update booking status (admin only)
-export const updateBookingStatus = async (bookingId: number, status: string): Promise<any> => {
+// Update booking status (admin)
+export const updateBookingStatus = async (
+    bookingId: number,
+    status: string
+): Promise<any> => {
     try {
         const token = localStorage.getItem('token');
-        const response = await axios.put(`${BASE_URL}/bookings/${bookingId}/status`, {
-            status
-        }, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await axios.put(
+            `${BASE_URL}/bookings/${bookingId}/status`,
+            { status },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
         return response.data;
     } catch (error: any) {
-        throw error.response?.data?.message || "Failed to update booking status";
+        throw error.response?.data?.message || 'Failed to update booking status';
     }
 };

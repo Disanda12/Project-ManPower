@@ -75,18 +75,9 @@ const OrderHistory = () => {
     navigate("/manage-bookings", { state: { bookingData: booking } });
   };
 
-  if (loading)
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="animate-spin text-[#00467f]" size={40} />
-      </div>
-    );
-
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto pt-10">
-        {" "}
-        {/* Added padding top for navbar safety */}
+      <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-[#00467f]">
             {isAdmin ? 'All Orders History' : 'Order History'}
@@ -98,22 +89,25 @@ const OrderHistory = () => {
             }
           </p>
         </div>
+
         {/* Tab Switcher */}
         <div className="flex space-x-1 bg-gray-200 p-1 rounded-xl mb-8 w-fit">
-          {["Active", "Completed"].map((tab) => (
+          {['Active', 'Completed'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab as any)}
               className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                activeTab === tab
-                  ? "bg-white text-[#00467f] shadow-md"
-                  : "text-gray-600 hover:text-gray-800"
+                activeTab === tab 
+                ? "bg-white text-[#00467f] shadow-md" 
+                : "text-gray-600 hover:text-gray-800"
               }`}
             >
               {tab} Bookings
             </button>
           ))}
         </div>
+
+        {/* Orders List */}
         <div className="space-y-4">
           {loading ? (
             <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-gray-300">
@@ -233,14 +227,6 @@ const OrderHistory = () => {
           )}
         </div>
       </div>
-      <AnimatePresence>
-        {selectedBookingId && (
-          <FeedbackForm
-            bookingId={selectedBookingId}
-            onClose={() => setSelectedBookingId(null)}
-          />
-        )}
-      </AnimatePresence>
     </div>
   );
 };

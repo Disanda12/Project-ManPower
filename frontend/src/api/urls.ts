@@ -21,10 +21,7 @@ export const BOOKING_ENDPOINTS = {
     GET_USER_BOOKINGS: (userId: number) => `${BASE_URL}/bookings/user/${userId}`,
 } as const;
 
-export const USER_ENDPOINTS = {
-    UPDATE_PROFILE: `${BASE_URL}/profile/update`,
-    GET_PROFILE: (userId: number) => `${BASE_URL}/profile/${userId}`,
-};
+
 export const USER_ENDPOINTS = {
     GET_USERS: `${BASE_URL}/users`,
     GET_WORKERS_DETAILS: `${BASE_URL}/users/workers`,
@@ -32,4 +29,6 @@ export const USER_ENDPOINTS = {
     UPDATE_USER: (id: string) => `${BASE_URL}/users/${id}`,
     UPDATE_USER_ROLE: (id: string) => `${BASE_URL}/users/${id}/role`,
     DELETE_USER: (id: string) => `${BASE_URL}/users/${id}`,
+    UPDATE_PROFILE: `${BASE_URL}/profile/update`,
+    GET_PROFILE: (userId: number) => `${BASE_URL}/profile/${userId}`
 } as const;

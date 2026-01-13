@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { getAllUsers, deleteUser, createUser, updateUser } from '../../../api/userService';
+import { getAllUsers, deleteUser, createUser, updateUser } from '../../../api/UserService';
 import { getAllServices } from '../../../api/serviceService';
 import { notify } from '../../utils/notify';
 
