@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { BASE_URL } from './urls';
+import { SERVICE_ENDPOINTS } from './urls';
 
-interface Service {
+export interface Service {
     service_id: number;
     service_name: string;
     description?: string;
@@ -78,5 +79,14 @@ export const deleteService = async (serviceId: number): Promise<{ message: strin
         return response.data;
     } catch (error: any) {
         throw error.response?.data?.message || "Failed to delete service";
+    }
+};
+
+export const fetchAvailableServices = async (): Promise<Service[]> => {
+    try {
+        const response = await axios.get(SERVICE_ENDPOINTS.GET_ALL);
+        return response.data;
+    } catch (error: any) {
+        throw error.response?.data?.message || "Failed to load services";
     }
 };

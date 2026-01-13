@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { BASE_URL } from './urls';
+import { BOOKING_ENDPOINTS } from './urls';
 
 interface BookingData {
     service_id: number;
@@ -34,18 +35,29 @@ interface Booking {
     updated_at: string;
 }
 
+export interface BookingPayload {
+  customer_id: number;
+  service_id: number;
+  number_of_workers: number;
+  work_description: string;
+  start_date: string;
+  end_date: string;
+  total_amount_lkr: number;
+  advance_amount_lkr: number;
+}
+
 // Create a new booking
-export const createBooking = async (bookingData: BookingData): Promise<any> => {
-    try {
-        const token = localStorage.getItem('token');
-        const response = await axios.post(`${BASE_URL}/bookings`, bookingData, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        return response.data;
-    } catch (error: any) {
-        throw error.response?.data?.message || "Failed to create booking";
-    }
-};
+// export const createBooking = async (bookingData: BookingData): Promise<any> => {
+//     try {
+//         const token = localStorage.getItem('token');
+//         const response = await axios.post(`${BASE_URL}/bookings`, bookingData, {
+//             headers: { Authorization: `Bearer ${token}` }
+//         });
+//         return response.data;
+//     } catch (error: any) {
+//         throw error.response?.data?.message || "Failed to create booking";
+//     }
+// };
 
 // Get customer's bookings
 export const getCustomerBookings = async (): Promise<Booking[]> => {
@@ -100,5 +112,25 @@ export const updateBookingStatus = async (bookingId: number, status: string): Pr
         return response.data;
     } catch (error: any) {
         throw error.response?.data?.message || "Failed to update booking status";
+    }
+};
+
+export const createBooking = async (payload: BookingPayload) => {
+  try {
+    const response = await axios.post(BOOKING_ENDPOINTS.CREATE, payload);
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data?.message || "Booking submission failed";
+  }
+};
+
+// src/api/bookingService.ts
+
+export const getUserBookings = async (userId: number) => {
+    try {
+        const response = await axios.get(BOOKING_ENDPOINTS.GET_USER_BOOKINGS(userId));
+        return response.data;
+    } catch (error: any) {
+        throw error.response?.data?.message || "Failed to load order history";
     }
 };

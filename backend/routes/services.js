@@ -105,5 +105,16 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+// GET all available services
+router.get('/get-Services', async (req, res) => {
+    try {
+        const [rows] = await db.query(
+            "SELECT service_id, service_name, description, daily_rate_lkr, advance_percentage FROM services WHERE is_available = TRUE"
+        );
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: "Database error", details: err.message });
+    }
+});
 
 module.exports = router;
