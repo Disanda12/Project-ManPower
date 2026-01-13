@@ -32,6 +32,17 @@ const handleLogin = async (e: React.FormEvent) => {
     // Use replace: true so they can't go 'back' into the login loop
     navigate(destination, { replace: true });
     // FIX END
+      // 3. Logic: Admin always goes to dashboard, customers go to 'from'
+      const destination = data.role === "admin" ? "/admin" : from;
+
+      // Use { replace: true } so the user can't go "back" to the login page
+      navigate(destination, { replace: true });
+    } catch (err: any) {
+      notify.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   } catch (err: any) {
     notify.error(err);

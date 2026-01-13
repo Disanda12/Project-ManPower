@@ -17,6 +17,12 @@ import SignUp from './components/signUp/SignUp';
 import ProfilePage from './components/profile/Profile';
 import AdminBookingManager from './components/admin/bookingManagement/BookingMangement';
 import AdminFeedbackManager from './components/admin/adminFeedback/AdminFeedbackManager';
+import UserManagement from './components/admin/userManagement/UserManagement';
+import WorkerManagement from './components/admin/workerManagement/WorkerManagement';
+import ServiceManagement from './components/admin/serviceManagement/ServiceManagement';
+import AdminDashboard from './components/admin/AdminDashboard';
+import AdminSettings from './components/admin/AdminSettings';
+import ScrollToTop from './components/ScrollToTop';
 
 function App() {
   return (
@@ -29,6 +35,7 @@ function App() {
           duration: 3000, 
         }}
       />
+      <ScrollToTop />
       
       <div className="flex flex-col min-h-screen">
         <NavigationBar />
@@ -45,8 +52,13 @@ function App() {
             <Route path="/industries" element={<IndustriesPage />} />
             <Route path="/sign-up" element={<SignUp />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/bookings" element={<AdminBookingManager />} />
             <Route path="/admin/feedbacks" element={<AdminFeedbackManager />} />
+            <Route path="/admin/users" element={<UserManagement />} />
+            <Route path="/admin/workers" element={<WorkerManagement />} />
+            <Route path="/admin/services" element={<ServiceManagement />} />
+            <Route path="/admin/settings" element={<AdminSettings />} />
           </Routes>
         </main>
 
