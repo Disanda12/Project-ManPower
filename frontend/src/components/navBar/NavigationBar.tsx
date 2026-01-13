@@ -39,10 +39,10 @@ const handleJobSeekerClick = (e: React.MouseEvent) => {
     const isLoggedIn = localStorage.getItem("token");
 
     if (isLoggedIn) {
-      navigate("/booking-history");
+      navigate("/customer-bookings");
     } else {
       // We tell the login page: "After success, go to /booking"
-      navigate("/login", { state: { from: "/booking-history" } });
+      navigate("/login", { state: { from: "/customer-bookings" } });
     }
   };
 

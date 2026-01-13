@@ -15,6 +15,7 @@ import ManageBookings from './components/admin/bookingHistory/BookingManagement'
 import IndustriesPage from './components/industries/Industries';
 import SignUp from './components/signUp/SignUp';
 import ProfilePage from './components/profile/Profile';
+import CustomerBookings from './components/customer-booking-history/CustomerBookingHistory';
 import AdminBookingManager from './components/admin/bookingManagement/BookingMangement';
 import AdminFeedbackManager from './components/admin/adminFeedback/AdminFeedbackManager';
 import UserManagement from './components/admin/userManagement/UserManagement';
@@ -51,6 +52,7 @@ function App() {
             <Route path="/manage-bookings" element={<ManageBookings />} />
             <Route path="/industries" element={<IndustriesPage />} />
             <Route path="/sign-up" element={<SignUp />} />
+            <Route path="/customer-bookings" element={<CustomerBookings />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/admin/bookings" element={<AdminBookingManager />} />

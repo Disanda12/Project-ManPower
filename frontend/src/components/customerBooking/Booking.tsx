@@ -1,220 +1,244 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { User, Calendar, MapPin, Briefcase, ChevronRight, Info, Mail } from 'lucide-react';
+import { 
+  Calendar, MapPin, HardHat, Users, ChevronRight, 
+  Loader2, Wallet, Briefcase, Info, MessageSquare 
+} from 'lucide-react';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useNavigate } from 'react-router-dom';
+import { fetchAvailableServices, Service } from '../../api/serviceService';
+import { notify } from '../utils/notify';
 import { createBooking } from '../../api/bookingService';
-import { getAllServices } from '../../api/serviceService';
 
 const HireWorkerForm = () => {
   const navigate = useNavigate();
-  
   const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
   const [startDate, endDate] = dateRange;
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [services, setServices] = useState<{service_id: number, service_name: string}[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [services, setServices] = useState<Service[]>([]);
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [formData, setFormData] = useState({
-    customerName: localStorage.getItem("userName") || '', // Initial default
-    email: localStorage.getItem("userEmail") || '',       // Initial default
-    phone1: '',
-    phone2: '',
-    serviceId: '',
-    numWorkers: 1,
-    numDays: 1,
-    address: '',
-    description: ''
+  const [formData, setFormData] = useState({ 
+    numWorkers: 1, 
+    numDays: 1, 
+    address: '', 
+    description: '' 
   });
 
   useEffect(() => {
-    const token = localStorage.getItem("userToken");
-    if (!token) {
-      // Not logged in? Redirect to login
-      navigate("/login");
-    }
+    const loadServices = async () => {
+      try {
+        const data = await fetchAvailableServices();
+        setServices(data);
+        if (data.length > 0) setSelectedService(data[0]);
+      } catch (err) {
+        notify.error("Error loading services");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadServices();
+  }, []);
 
-    // Fetch available services
-    fetchServices();
-  }, [navigate]);
-
-  const fetchServices = async () => {
-    try {
-      const servicesData = await getAllServices();
-      setServices(servicesData);
-    } catch (error) {
-      console.error('Failed to fetch services:', error);
-    }
-  };
-  // Validation Logic: Check if Calendar days match Hire Duration input
   useEffect(() => {
     if (startDate && endDate) {
-      const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-      setFormData(prev => ({ ...prev, numDays: diffDays }));
+      const diff = Math.ceil(Math.abs(endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      setFormData(prev => ({ ...prev, numDays: diff }));
     }
   }, [startDate, endDate]);
 
-  const handleSubmit = async (e: any) => {
-    e.preventDefault();
-    if (errorMessage || !startDate || !endDate) return; // Prevent submission if error exists
+  const total = (selectedService ? Number(selectedService.daily_rate_lkr) : 0) * formData.numWorkers * formData.numDays;
+  const advance = (total * (selectedService ? Number(selectedService.advance_percentage) : 0)) / 100;
 
-    setLoading(true);
+  const handleBookingSubmit = async () => {
+    if (!startDate || !endDate || !formData.address || !formData.description) {
+      return notify.error("Please fill in all requirements.");
+    }
     
+    setIsSubmitting(true);
     try {
-      // Calculate total amount (this is a simple calculation - you might want to make this more sophisticated)
-      const dailyRate = 5000; // LKR per worker per day
-      const totalAmount = formData.numWorkers * formData.numDays * dailyRate;
-      const advanceAmount = totalAmount * 0.3; // 30% advance
-
-      const bookingData = {
-        service_id: parseInt(formData.workerType), // This should be the service_id
+      const result = await createBooking({
+        customer_id: Number(localStorage.getItem('user_id')),
+        service_id: Number(selectedService?.service_id),
         number_of_workers: formData.numWorkers,
-        work_description: `Work at: ${formData.address}`,
-        start_date: startDate.toISOString().split('T')[0],
-        end_date: endDate.toISOString().split('T')[0],
-        total_amount_lkr: totalAmount,
-        advance_amount_lkr: advanceAmount
-      };
+        work_description: formData.description,
+        location: formData.address,
+        start_date: startDate.toLocaleDateString('en-CA'),
+        end_date: endDate.toLocaleDateString('en-CA'),
+        total_amount_lkr: total,
+        advance_amount_lkr: advance,
+      });
 
-      await createBooking(bookingData);
-      
-      alert("Booking Submitted Successfully! Real workers will be assigned to your project.");
-      navigate('/booking-history'); // Redirect to booking history
-    } catch (error: any) {
-      console.error('Booking submission error:', error);
-      alert(`Booking failed: ${error.message || 'Please try again'}`);
+      if (result.success) {
+        notify.success("Booking Request Sent!");
+        navigate('/customer-bookings');
+      }
+    } catch (err) {
+      notify.error("Booking failed. Please try again.");
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
+  if (loading) return (
+    <div className="h-screen bg-white flex items-center justify-center">
+      <Loader2 className="animate-spin text-blue-600" size={40} />
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-slate-50 pt-28 pb-20 px-4">
+    <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center p-4 pt-24 pb-12">
+      
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100"
+        className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-0 overflow-hidden rounded-[2rem] shadow-xl border border-gray-200 bg-white"
       >
-        <div className="bg-[#00467f] p-8 text-white flex justify-between items-end">
-          <div>
-            <h1 className="text-3xl font-bold">Place Your Order</h1>
-            <p className="text-blue-100 mt-2">Enter your requirements below.</p>
+        {/* LEFT SIDE: INPUT FORM */}
+        <div className="lg:col-span-7 p-8 md:p-12">
+          <div className="flex items-center gap-4 mb-10">
+            <div className="bg-blue-600 p-3 rounded-2xl text-white shadow-lg shadow-blue-200">
+              <HardHat size={28} />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Hire a Professional</h1>
+              <p className="text-gray-500 font-medium italic">Configure your requirements below</p>
+            </div>
           </div>
-          <div className="text-right">
-            <p className="text-xs text-blue-200 uppercase font-bold">Total Amount</p>
-            <p className="text-3xl font-mono font-bold">LKR {totalAmount.toLocaleString()}</p>
+
+          <div className="space-y-8">
+            {/* SERVICE SELECTOR */}
+            <div className="space-y-3">
+              <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-blue-600">
+                <Briefcase size={14} /> 1. Select Service Type
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {services.map(s => (
+                  <button 
+                    key={s.service_id}
+                    onClick={() => setSelectedService(s)}
+                    className={`px-6 py-3 rounded-xl font-bold border-2 transition-all duration-200 ${
+                      selectedService?.service_id === s.service_id 
+                      ? "border-blue-600 bg-blue-50 text-blue-700 shadow-sm" 
+                      : "border-gray-100 bg-gray-50 text-gray-500 hover:border-gray-200"
+                    }`}
+                  >
+                    {s.service_name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* DATE PICKER */}
+              <div className="space-y-3">
+                <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-blue-600">
+                  <Calendar size={14} /> 2. Schedule Duration
+                </label>
+                <div className="relative">
+                  <DatePicker 
+                    selectsRange startDate={startDate} endDate={endDate} minDate={new Date()}
+                    onChange={(update: any) => setDateRange(update)} 
+                    className="w-full h-14 bg-gray-50 border-2 border-gray-100 rounded-xl px-4 font-bold text-gray-700 outline-none focus:border-blue-600 transition-all cursor-pointer"
+                    placeholderText="Click to select dates"
+                  />
+                </div>
+              </div>
+
+              {/* WORKER COUNTER */}
+              <div className="space-y-3">
+                <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-blue-600">
+                  <Users size={14} /> 3. Workforce Needed
+                </label>
+                <div className="flex items-center bg-gray-50 rounded-xl border-2 border-gray-100 h-14 px-2">
+                  <button onClick={() => setFormData({...formData, numWorkers: Math.max(1, formData.numWorkers - 1)})} className="w-10 h-10 bg-white border border-gray-200 rounded-lg text-gray-600 font-bold hover:bg-gray-100 transition-colors">-</button>
+                  <span className="flex-1 text-center font-bold text-xl text-gray-800">{formData.numWorkers} Staff</span>
+                  <button onClick={() => setFormData({...formData, numWorkers: formData.numWorkers + 1})} className="w-10 h-10 bg-white border border-gray-200 rounded-lg text-gray-600 font-bold hover:bg-gray-100 transition-colors">+</button>
+                </div>
+              </div>
+            </div>
+
+            {/* ADDRESS */}
+            <div className="space-y-3">
+              <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-blue-600">
+                <MapPin size={14} /> 4. Deployment Location
+              </label>
+              <input 
+                placeholder="Enter city and street address..."
+                onChange={(e) => setFormData({...formData, address: e.target.value})}
+                className="w-full h-14 bg-gray-50 border-2 border-gray-100 rounded-xl px-4 font-bold text-gray-700 placeholder:text-gray-400 focus:border-blue-600 outline-none transition-all"
+              />
+            </div>
+
+            {/* DESCRIPTION */}
+            <div className="space-y-3">
+              <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-blue-600">
+                <MessageSquare size={14} /> 5. Job Description
+              </label>
+              <textarea 
+                placeholder="Briefly describe the tasks (e.g., painting 2 rooms, fixing plumbing leak)..."
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                className="w-full h-32 bg-gray-50 border-2 border-gray-100 rounded-xl p-4 font-bold text-gray-700 placeholder:text-gray-400 focus:border-blue-600 outline-none transition-all resize-none shadow-sm"
+              />
+            </div>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-          
-          {/* Section: Customer Info (Now Editable) */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-bold text-gray-800 border-b pb-2 flex items-center gap-2">
-              <User size={20} className="text-[#00467f]" /> Contact Details
-            </h3>
-            <div className="space-y-4">
-                <div>
-                  <label className="text-xs font-bold text-gray-500 uppercase">Full Name</label>
-                  <input 
-                    required 
-                    value={formData.customerName} 
-                    className="w-full p-3 border rounded-lg mt-1 outline-none focus:ring-2 focus:ring-[#00467f]" 
-                    onChange={(e) => setFormData({...formData, customerName: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-gray-500 uppercase">Email Address</label>
-                  <input 
-                    required 
-                    type="email"
-                    value={formData.email} 
-                    className="w-full p-3 border rounded-lg mt-1 outline-none focus:ring-2 focus:ring-[#00467f]" 
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                    <input required placeholder="Mobile 1" className="p-3 border rounded-lg" onChange={(e)=>setFormData({...formData, phone1: e.target.value})} />
-                    <input placeholder="Mobile 2" className="p-3 border rounded-lg" onChange={(e)=>setFormData({...formData, phone2: e.target.value})} />
-                </div>
-            </div>
-          </div>
-
-          {/* Section: Requirements */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-bold text-gray-800 border-b pb-2 flex items-center gap-2">
-              <Briefcase size={20} className="text-[#00467f]" /> Work Requirements
-            </h3>
+        {/* RIGHT SIDE: SUMMARY (BRAND BLUE PANEL) */}
+        <div className="lg:col-span-5 bg-blue-600 p-8 md:p-12 flex flex-col justify-between text-white relative">
+          <div>
+            <h2 className="text-sm font-black uppercase tracking-[0.2em] mb-12 text-blue-100">Booking Summary</h2>
             
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Service Type</label>
-              <select 
-                required
-                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition"
-                onChange={(e) => setFormData({...formData, workerType: e.target.value})}
-                value={formData.workerType}
-              >
-                <option value="">Select a Service</option>
-                {services.map((service) => (
-                  <option key={service.service_id} value={service.service_id}>
-                    {service.service_name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-8">
+              <div className="flex justify-between items-end border-b border-blue-400 pb-5">
                 <div>
-                    <label className="text-xs font-bold text-gray-500 uppercase">Workers</label>
-                    <input type="number" min="1" value={formData.numWorkers} className="w-full p-3 border rounded-lg mt-1" onChange={(e)=>setFormData({...formData, numWorkers: Number(e.target.value)})} />
+                  <p className="text-xs font-bold text-blue-200 uppercase mb-1">Service</p>
+                  <p className="text-2xl font-bold">{selectedService?.service_name || 'Not Selected'}</p>
                 </div>
-                <div>
-                    <label className="text-xs font-bold text-gray-500 uppercase">Duration (Days)</label>
-                    <input type="number" readOnly value={formData.numDays} className="w-full p-3 bg-gray-100 border rounded-lg mt-1 text-gray-400" />
-                </div>
-            </div>
+                <p className="font-medium text-blue-100">LKR {Number(selectedService?.daily_rate_lkr).toLocaleString()}/day</p>
+              </div>
 
-            {/* FIXED SPACING: Added mb-2 to label and mt-1 to input container */}
-            <div className="relative">
-                <label className="text-xs font-bold text-gray-500 uppercase block mb-1.5">Select Dates</label>
-                <div className="relative">
-                    <DatePicker 
-                        selectsRange 
-                        startDate={startDate} 
-                        endDate={endDate} 
-                        onChange={(update: any) => setDateRange(update)} 
-                        className="w-full p-3 border rounded-lg cursor-pointer outline-none focus:ring-2 focus:ring-[#00467f]"
-                        placeholderText="Choose start and end date"
-                    />
+              <div className="flex justify-between items-end border-b border-blue-400 pb-5">
+                <div>
+                  <p className="text-xs font-bold text-blue-200 uppercase mb-1">Total Bill</p>
+                  <p className="text-4xl font-bold">LKR {total.toLocaleString()}</p>
                 </div>
+                <div className="text-right text-[10px] font-bold uppercase text-blue-100">
+                  {formData.numWorkers} Staff • {formData.numDays} Days
+                </div>
+              </div>
+
+              <div className="bg-white p-8 rounded-3xl shadow-2xl">
+                <div className="flex items-center gap-2 mb-2 text-blue-600">
+                  <Wallet size={20} />
+                  <span className="text-xs font-black uppercase">Payable Now (Advance)</span>
+                </div>
+                <p className="text-5xl font-black text-gray-900 tracking-tight">
+                  LKR {advance.toLocaleString()}
+                </p>
+                <p className="text-[10px] font-bold uppercase mt-4 text-gray-400 flex items-center gap-1">
+                  <Info size={12}/> Required for schedule confirmation
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Location & Details */}
-          <div className="md:col-span-2 space-y-4">
-            <h3 className="text-lg font-bold text-gray-800 border-b pb-2 flex items-center gap-2">
-                <MapPin size={20} className="text-[#00467f]" /> Job Details
-            </h3>
-            <textarea required placeholder="Job Description..." className="w-full p-3 border rounded-lg h-24" onChange={(e)=>setFormData({...formData, description: e.target.value})} />
-            <textarea required placeholder="Full Work Address" className="w-full p-3 border rounded-lg" onChange={(e)=>setFormData({...formData, address: e.target.value})} />
-          </div>
-
-          <div className="md:col-span-2 mt-4">
-            <button 
-              type="submit"
-              disabled={!!errorMessage || !endDate || loading}
-              className={`w-full font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 text-lg transform transition-all
-                ${errorMessage || !endDate || loading
-                  ? 'bg-gray-300 cursor-not-allowed text-gray-500' 
-                  : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200 hover:scale-[1.01]'}`}
+          <div className="mt-12">
+            <button
+              onClick={handleBookingSubmit}
+              disabled={isSubmitting || !endDate || !formData.address || !formData.description}
+              className="w-full bg-gray-900 text-white hover:bg-black font-bold py-5 rounded-2xl transition-all flex items-center justify-center gap-3 disabled:bg-blue-400 disabled:cursor-not-allowed shadow-lg active:scale-[0.98]"
             >
-              {loading ? 'Processing...' : 'Confirm & Place Order'} 
-              {!loading && <ChevronRight size={20} />}
+              {isSubmitting ? <Loader2 className="animate-spin" /> : "CONFIRM & BOOK"}
+              <ChevronRight size={22} />
             </button>
+            <p className="text-center text-[10px] font-bold text-blue-100 uppercase tracking-widest mt-6 opacity-70">
+              Reliable Service • Secure Payment
+            </p>
           </div>
-        </form>
+        </div>
       </motion.div>
     </div>
   );

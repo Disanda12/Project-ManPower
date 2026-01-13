@@ -44,6 +44,7 @@ export interface BookingPayload {
   end_date: string;
   total_amount_lkr: number;
   advance_amount_lkr: number;
+  location: string;
 }
 
 // Create a new booking
@@ -132,5 +133,15 @@ export const getUserBookings = async (userId: number) => {
         return response.data;
     } catch (error: any) {
         throw error.response?.data?.message || "Failed to load order history";
+    }
+};
+// cancel booking 
+export const cancelBooking = async (bookingId: number) => {
+    try {
+        // Using patch because we are updating only the status field
+        const response = await axios.patch(BOOKING_ENDPOINTS.CANCEL_BOOKING(bookingId));
+        return response.data;
+    } catch (error: any) {
+        throw error.response?.data?.message || "Failed to cancel booking";
     }
 };

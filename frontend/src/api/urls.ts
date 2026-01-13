@@ -27,8 +27,9 @@ export const SERVICE_ENDPOINTS = {
 } as const;
 
 export const BOOKING_ENDPOINTS = {
-    CREATE: `${BASE_URL}/bookings/create`,
-    GET_USER_BOOKINGS: (userId: number) => `${BASE_URL}/bookings/user/${userId}`,
+    CREATE: `${BASE_URL}/customer-booking/create`,
+    GET_USER_BOOKINGS: (userId: number) => `${BASE_URL}/customer-booking/user/${userId}`,
+    CANCEL_BOOKING: (bookingId: number) => `${BASE_URL}/customer-booking/cancel/${bookingId}`,
 } as const;
 
 
