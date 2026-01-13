@@ -251,7 +251,7 @@ const AdminDashboard: React.FC = () => {
         {/* Quick Actions */}
         <div className="mt-6 md:mt-8 bg-white rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-100 shadow-sm">
           <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4 md:mb-6">Quick Actions</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
             <button
               onClick={() => navigate('/admin/users')}
               className="flex items-center space-x-3 p-3 md:p-4 bg-blue-50 hover:bg-blue-100 rounded-lg md:rounded-xl transition-colors"
@@ -265,7 +265,15 @@ const AdminDashboard: React.FC = () => {
               className="flex items-center space-x-3 p-3 md:p-4 bg-green-50 hover:bg-green-100 rounded-lg md:rounded-xl transition-colors"
             >
               <UserCheck className="w-4 h-4 md:w-5 md:h-5 text-green-600 flex-shrink-0" />
-              <span className="font-medium text-green-900 text-sm md:text-base">Manage Workers</span>
+              <span className="font-medium text-green-900 text-base">Manage Workers</span>
+            </button>
+
+            <button
+              onClick={() => navigate('/admin/bookings')}
+              className="flex items-center space-x-3 p-3 md:p-4 bg-indigo-50 hover:bg-indigo-100 rounded-lg md:rounded-xl transition-colors"
+            >
+              <Calendar className="w-4 h-4 md:w-5 md:h-5 text-indigo-600 flex-shrink-0" />
+              <span className="font-medium text-indigo-900 text-base">Manage Bookings</span>
             </button>
 
             <button
@@ -273,7 +281,7 @@ const AdminDashboard: React.FC = () => {
               className="flex items-center space-x-3 p-3 md:p-4 bg-purple-50 hover:bg-purple-100 rounded-lg md:rounded-xl transition-colors"
             >
               <Briefcase className="w-4 h-4 md:w-5 md:h-5 text-purple-600 flex-shrink-0" />
-              <span className="font-medium text-purple-900 text-sm md:text-base">Manage Services</span>
+              <span className="font-medium text-purple-900 text-base">Manage Services</span>
             </button>
 
             <button
@@ -281,7 +289,7 @@ const AdminDashboard: React.FC = () => {
               className="flex items-center space-x-3 p-3 md:p-4 bg-pink-50 hover:bg-pink-100 rounded-lg md:rounded-xl transition-colors"
             >
               <MessageSquare className="w-4 h-4 md:w-5 md:h-5 text-pink-600 flex-shrink-0" />
-              <span className="font-medium text-pink-900 text-sm md:text-base">Manage Feedbacks</span>
+              <span className="font-medium text-pink-900 text-base">Manage Feedbacks</span>
             </button>
 
             <button
@@ -289,7 +297,7 @@ const AdminDashboard: React.FC = () => {
               className="flex items-center space-x-3 p-3 md:p-4 bg-gray-50 hover:bg-gray-100 rounded-lg md:rounded-xl transition-colors"
             >
               <Settings className="w-4 h-4 md:w-5 md:h-5 text-gray-600 flex-shrink-0" />
-              <span className="font-medium text-gray-900 text-sm md:text-base">Settings</span>
+              <span className="font-medium text-gray-900 text-base">Settings</span>
             </button>
           </div>
         </div>

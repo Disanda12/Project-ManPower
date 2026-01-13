@@ -284,12 +284,12 @@ const handleJobSeekerClick = (e: React.MouseEvent) => {
               >
                 Home
               </a>
-              <button
+              {/* <button
                 onClick={handleJobSeekerClick}
                 className="text-gray-700 hover:text-[#00467f] font-medium transition-colors outline-none"
               >
                 Find a Worker
-              </button>
+              </button> */}
               <button
                 onClick={handleOrderHistoryClick}
                 className="text-gray-700 hover:text-[#00467f] font-medium transition-colors"
