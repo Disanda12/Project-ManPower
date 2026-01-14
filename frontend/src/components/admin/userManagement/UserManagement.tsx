@@ -94,7 +94,7 @@ const UserManagement: React.FC = () => {
     const paginatedUsers = users.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     return (
-        <div className="container max-w-7xl mx-auto px-4 md:px-8 py-8">
+        <div className="container max-w-7xl mx-auto px-4 md:px-8 py-10 pt-28">
             
             {/* Back Button */}
             <div className="mb-6">
