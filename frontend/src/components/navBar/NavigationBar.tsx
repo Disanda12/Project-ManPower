@@ -10,10 +10,13 @@ import {
   Calendar,
   Briefcase,
   Users,
-  Search
+  Search,
+  Bell
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import NotificationDropdown from "./NotificationDropdown";
+import { getUserNotifications } from "../../api/notificationService";
 
 const NavigationBar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -27,6 +30,8 @@ const NavigationBar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
   const [userRole, setUserRole] = useState(localStorage.getItem("role") || "");
   const [userName, setUserName] = useState(localStorage.getItem("userName") || "User");
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   const getAvatarColor = (name: string) => {
     const colors = ["bg-blue-600", "bg-indigo-600", "bg-violet-600", "bg-emerald-600", "bg-amber-600"];
@@ -49,6 +54,21 @@ const NavigationBar = () => {
     window.addEventListener("storage", checkAuth);
     return () => window.removeEventListener("storage", checkAuth);
   }, []);
+
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      if (isLoggedIn) {
+        try {
+          const notifications = await getUserNotifications();
+          const unread = notifications.filter(n => !n.is_read).length;
+          setUnreadNotifications(unread);
+        } catch (error) {
+          console.error('Failed to fetch notifications:', error);
+        }
+      }
+    };
+    fetchUnreadCount();
+  }, [isLoggedIn]);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -110,7 +130,28 @@ const NavigationBar = () => {
           {/* USER SECTION (DESKTOP) */}
           <div className="hidden lg:flex items-center space-x-4">
             {isLoggedIn ? (
-              <div className="relative" onMouseEnter={() => setActiveDropdown('account')} onMouseLeave={() => setActiveDropdown(null)}>
+              <>
+                {/* Notifications Bell */}
+                <div className="relative">
+                  <button
+                    onClick={() => setNotificationsOpen(!notificationsOpen)}
+                    className="relative p-2 bg-gray-50 rounded-full hover:bg-white hover:shadow-md transition-all border border-gray-100"
+                  >
+                    <Bell size={18} className="text-gray-600" />
+                    {unreadNotifications > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                        {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                      </span>
+                    )}
+                  </button>
+                  <NotificationDropdown
+                    isOpen={notificationsOpen}
+                    onClose={() => setNotificationsOpen(false)}
+                    onUnreadCountChange={setUnreadNotifications}
+                  />
+                </div>
+
+                <div className="relative" onMouseEnter={() => setActiveDropdown('account')} onMouseLeave={() => setActiveDropdown(null)}>
                 <button className="flex items-center space-x-3 p-1 pr-4 bg-gray-50 rounded-full hover:bg-white hover:shadow-md transition-all border border-gray-100 group">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-black shadow-inner ${getAvatarColor(userName)}`}>
                     {userName.charAt(0).toUpperCase()}
@@ -157,6 +198,7 @@ const NavigationBar = () => {
                   )}
                 </AnimatePresence>
               </div>
+              </>
             ) : (
               <Link to="/login" className="px-8 py-3 bg-[#00467f] text-white rounded-full font-bold text-sm hover:bg-[#003560] transition-colors">Sign In</Link>
             )}
