@@ -161,7 +161,7 @@ const AdminDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-gray-100 pt-10 pb-8 sm:pb-10 md:pb-20 px-4 md:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-gray-100 pt-28 pb-8 sm:pb-10 md:pb-20 px-4 md:px-8">
       <div className="max-w-7xl md:px-10 mx-auto">
         {/* Modern Header */}
         <motion.div

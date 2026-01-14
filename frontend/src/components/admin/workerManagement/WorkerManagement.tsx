@@ -214,7 +214,7 @@ const WorkerManagement: React.FC = () => {
     const paginatedWorkers = workers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     return (
-        <div className="container max-w-7xl mx-auto px-4 md:px-8 py-8">
+        <div className="container max-w-7xl mx-auto px-4 md:px-8 py-10 pt-28">
             
             {/* Back Button */}
             <div className="mb-6">
