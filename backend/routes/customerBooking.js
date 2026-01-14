@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, } = require('../middleware/auth');
 
 // Add 'authenticateToken' here to protect the route
 router.post('/create', authenticateToken, async (req, res) => {
@@ -88,38 +88,52 @@ router.get('/user/:userId', async (req, res) => {
 });
 
 // CANCEL a booking
-router.patch('/cancel/:bookingId', async (req, res) => {
+router.patch('/cancel/:bookingId', authenticateToken, async (req, res) => {
     const { bookingId } = req.params;
+    const userId = req.user.id; // Extracted from the token by authenticateToken middleware
 
     try {
-        // 1. Check if the booking exists and is in a cancellable state
+        // 1. Check if the booking exists AND belongs to the authenticated user
         const [booking] = await db.query(
-            "SELECT booking_status FROM bookings WHERE booking_id = ?", 
-            [bookingId]
+            "SELECT booking_status FROM bookings WHERE booking_id = ? AND customer_id = ?", 
+            [bookingId, userId]
         );
 
+        // If no booking found, it either doesn't exist or belongs to someone else
         if (booking.length === 0) {
-            return res.status(404).json({ success: false, message: "Booking not found" });
-        }
-
-        const currentStatus = booking[0].booking_status.toLowerCase();
-        if (currentStatus === 'confirmed' || currentStatus === 'completed') {
-            return res.status(400).json({ 
+            return res.status(404).json({ 
                 success: false, 
-                message: "Cannot cancel a booking that is already confirmed or completed." 
+                message: "Booking not found or you do not have permission to cancel it." 
             });
         }
 
-        // 2. Update status to 'cancelled'
+        const currentStatus = booking[0].booking_status.toLowerCase();
+
+        // 2. Prevent cancelling if already confirmed, completed, or already cancelled
+        if (['confirmed', 'completed', 'cancelled'].includes(currentStatus)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: `Cannot cancel a booking that is already ${currentStatus}.` 
+            });
+        }
+
+        // 3. Update status to 'cancelled' - targeting both ID and customer_id for safety
         await db.query(
-            "UPDATE bookings SET booking_status = 'cancelled' WHERE booking_id = ?",
-            [bookingId]
+            "UPDATE bookings SET booking_status = 'cancelled' WHERE booking_id = ? AND customer_id = ?",
+            [bookingId, userId]
         );
 
-        res.json({ success: true, message: "Booking cancelled successfully" });
+        res.json({ 
+            success: true, 
+            message: "Booking cancelled successfully" 
+        });
+
     } catch (err) {
         console.error("Cancel Error:", err);
-        res.status(500).json({ success: false, message: "Server error during cancellation" });
+        res.status(500).json({ 
+            success: false, 
+            message: "Server error during cancellation" 
+        });
     }
 });
 

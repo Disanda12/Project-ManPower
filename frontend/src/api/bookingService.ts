@@ -118,12 +118,11 @@ export const updateBookingStatus = async (bookingId: number, status: string): Pr
 
 export const createBooking = async (payload: any) => {
   try {
-    // Notice we use API.post instead of axios.post
+ 
     const response = await API.post(BOOKING_ENDPOINTS.CREATE, payload);
     return response.data;
   } catch (error: any) {
-    // The interceptor handles the 401 redirect, 
-    // this catch handles regular errors (like 500 or 400 validation)
+   
     throw error.response?.data?.message || "Booking submission failed";
   }
 };
@@ -140,10 +139,12 @@ export const getUserBookings = async (userId: number) => {
 // cancel booking 
 export const cancelBooking = async (bookingId: number) => {
     try {
-        // Using patch because we are updating only the status field
-        const response = await axios.patch(BOOKING_ENDPOINTS.CANCEL_BOOKING(bookingId));
+        
+        const response = await API.patch(BOOKING_ENDPOINTS.CANCEL_BOOKING(bookingId));
+        
         return response.data;
     } catch (error: any) {
+        
         throw error.response?.data?.message || "Failed to cancel booking";
     }
 };
