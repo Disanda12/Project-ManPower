@@ -171,7 +171,7 @@ const AdminDashboard: React.FC = () => {
         >
           <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
             <div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-900 bg-clip-text text-transparent">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-900 via-blue-800  to-blue-900 bg-clip-text text-transparent">
                 Admin Dashboard
               </h1>
               <p className="text-slate-600 mt-2 text-sm sm:text-base md:text-lg font-medium">
@@ -202,7 +202,7 @@ const AdminDashboard: React.FC = () => {
             icon={Users}
             title="Total Customers"
             value={stats.totalUsers}
-            color="text-blue-600"
+            color="text-blue-900"
             bgColor="bg-gradient-to-br from-blue-100 to-blue-200"
             trend="+12%"
           />
@@ -210,7 +210,7 @@ const AdminDashboard: React.FC = () => {
             icon={UserCheck}
             title="Total Workers"
             value={stats.totalWorkers}
-            color="text-blue-600"
+            color="text-blue-900"
             bgColor="bg-gradient-to-br from-blue-100 to-blue-200"
             trend="+8%"
           />
@@ -218,7 +218,7 @@ const AdminDashboard: React.FC = () => {
             icon={Briefcase}
             title="Total Services"
             value={stats.totalServices}
-            color="text-blue-600"
+            color="text-blue-900"
             bgColor="bg-gradient-to-br from-blue-100 to-blue-200"
             trend="+15%"
           />
@@ -226,7 +226,7 @@ const AdminDashboard: React.FC = () => {
             icon={Calendar}
             title="Total Bookings"
             value={stats.totalBookings}
-            color="text-blue-600"
+            color="text-blue-900"
             bgColor="bg-gradient-to-br from-blue-100 to-blue-200"
             trend="+23%"
           />
@@ -243,21 +243,21 @@ const AdminDashboard: React.FC = () => {
             icon={Clock}
             title="Pending Bookings"
             value={stats.pendingBookings}
-            color="text-blue-600"
+            color="text-blue-900"
             bgColor="bg-gradient-to-br from-blue-100 to-blue-200"
           />
           <StatCard
             icon={CheckCircle}
             title="Completed Bookings"
             value={stats.completedBookings}
-            color="text-blue-600"
+            color="text-blue-900"
             bgColor="bg-gradient-to-br from-blue-100 to-blue-200"
           />
           <StatCard
             icon={MessageSquare}
             title="Pending Feedbacks"
             value={stats.pendingFeedbacks}
-            color="text-blue-600"
+            color="text-blue-900"
             bgColor="bg-gradient-to-br from-blue-100 to-blue-200"
           />
         </motion.div>
@@ -275,7 +275,7 @@ const AdminDashboard: React.FC = () => {
           >
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2 bg-blue-100 rounded-lg">
-                <BarChart3 className="w-5 h-5 text-blue-600" />
+                <BarChart3 className="w-5 h-5 text-blue-900" />
               </div>
               <div>
                 <h3 className="text-lg font-bold text-slate-900">Platform Overview</h3>
@@ -348,7 +348,7 @@ const AdminDashboard: React.FC = () => {
           >
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2 bg-blue-100 rounded-lg">
-                <Activity className="w-5 h-5 text-blue-600" />
+                <Activity className="w-5 h-5 text-blue-900" />
               </div>
               <div>
                 <h3 className="text-lg font-bold text-slate-900">Booking Status</h3>
@@ -438,7 +438,7 @@ const AdminDashboard: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-100 rounded-lg">
-                <Calendar className="w-5 h-5 text-blue-600" />
+                <Calendar className="w-5 h-5 text-blue-900" />
               </div>
               <div>
                 <h3 className="text-lg font-bold text-slate-900">Recent Bookings</h3>
@@ -466,7 +466,7 @@ const AdminDashboard: React.FC = () => {
                 <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
                   <div className="flex items-center space-x-3 sm:space-x-4">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                      <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-blue-900" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold text-slate-900 text-sm sm:text-base">
@@ -512,7 +512,7 @@ const AdminDashboard: React.FC = () => {
         >
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-blue-100 rounded-lg">
-              <Settings className="w-5 h-5 text-blue-600" />
+              <Settings className="w-5 h-5 text-blue-900" />
             </div>
             <div>
               <h3 className="text-lg font-bold text-slate-900">Quick Actions</h3>
@@ -575,8 +575,8 @@ const AdminDashboard: React.FC = () => {
                 className={`group p-3 sm:p-4 bg-gradient-to-br from-${action.color}-50 to-${action.color}-100 hover:from-${action.color}-100 hover:to-${action.color}-200 rounded-xl border border-${action.color}-200/50 hover:border-${action.color}-300 hover:shadow-lg transition-all duration-200 text-left min-h-[80px] sm:min-h-[88px]`}
               >
                 <div className="flex items-start gap-3">
-                  <div className={`p-2 bg-${action.color}-100 rounded-lg group-hover:bg-${action.color}-200 transition-colors flex-shrink-0`}>
-                    <action.icon className={`w-4 h-4 sm:w-5 sm:h-5 text-${action.color}-600`} />
+                  <div className={`p-2 bg-blue-100 rounded-lg group-hover:bg-${action.color}-200 transition-colors flex-shrink-0`}>
+                    <action.icon className={`w-4 h-4 sm:w-5 sm:h-5 text-blue-900`} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className={`font-semibold text-${action.color}-900 text-sm sm:text-base`}>{action.label}</h4>
