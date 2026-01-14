@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { BASE_URL } from './urls';
 import { BOOKING_ENDPOINTS } from './urls';
-
+import API from './axiosConfig'; // Use the protected instance
 interface BookingData {
     service_id: number;
     number_of_workers: number;
@@ -116,15 +116,17 @@ export const updateBookingStatus = async (bookingId: number, status: string): Pr
     }
 };
 
-export const createBooking = async (payload: BookingPayload) => {
+export const createBooking = async (payload: any) => {
   try {
-    const response = await axios.post(BOOKING_ENDPOINTS.CREATE, payload);
+    // Notice we use API.post instead of axios.post
+    const response = await API.post(BOOKING_ENDPOINTS.CREATE, payload);
     return response.data;
   } catch (error: any) {
+    // The interceptor handles the 401 redirect, 
+    // this catch handles regular errors (like 500 or 400 validation)
     throw error.response?.data?.message || "Booking submission failed";
   }
 };
-
 // src/api/bookingService.ts
 
 export const getUserBookings = async (userId: number) => {

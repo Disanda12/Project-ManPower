@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
+const { authenticateToken } = require('../middleware/auth');
 
-router.post('/create', async (req, res) => {
+// Add 'authenticateToken' here to protect the route
+router.post('/create', authenticateToken, async (req, res) => {
     const { 
-        customer_id, 
         service_id, 
         number_of_workers, 
         work_description, 
@@ -12,13 +13,19 @@ router.post('/create', async (req, res) => {
         end_date, 
         total_amount_lkr, 
         advance_amount_lkr,
-        location
+        location,
+        customer_id: requested_customer_id // Optional: if admin wants to specify a ID
     } = req.body;
+
+    // Security: Use logged-in user ID, or if Admin, use the provided customer_id
+    const customer_id = (req.user.role === 'admin' && requested_customer_id) 
+        ? requested_customer_id 
+        : req.user.id;
 
     try {
         const sql = `
             INSERT INTO bookings 
-            (customer_id, service_id, number_of_workers, work_description, start_date, end_date, total_amount_lkr, advance_amount_lkr,location) 
+            (customer_id, service_id, number_of_workers, work_description, start_date, end_date, total_amount_lkr, advance_amount_lkr, location) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
@@ -40,8 +47,12 @@ router.post('/create', async (req, res) => {
             bookingId: result.insertId 
         });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ success: false, message: "Server error during booking" });
+        console.error("Booking Error:", err);
+        res.status(500).json({ 
+            success: false, 
+            message: "Server error during booking",
+            error: err.message 
+        });
     }
 });
 
