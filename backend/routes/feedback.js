@@ -7,16 +7,16 @@ router.post('/submit', async (req, res) => {
     const { booking_id, customer_id, rating, comment } = req.body;
    
     try {
-        // SQL query remains the same, ensuring we only pass the non-image fields
-        const sql = `INSERT INTO feedbacks (booking_id, customer_id, rating, comment,) 
-                     VALUES (?, ?, ?, ?, ?)`;
+        // 1. Removed the extra comma after 'comment'
+        // 2. Changed to exactly FOUR '?' to match the four variables
+        const sql = `INSERT INTO feedbacks (booking_id, customer_id, rating, comment) 
+                     VALUES (?, ?, ?, ?)`;
         
         await db.query(sql, [
             booking_id, 
             customer_id, 
             rating, 
             comment, 
-            new Date()
         ]);
 
         res.status(201).json({ success: true, message: "Feedback submitted successfully!" });
