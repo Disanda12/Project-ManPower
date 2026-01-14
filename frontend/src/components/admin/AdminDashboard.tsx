@@ -9,8 +9,12 @@ import {
   MessageSquare,
   Clock,
   CheckCircle,
-  Settings
+  Settings,
+  TrendingUp,
+  Activity,
+  BarChart3
 } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, LineChart, Line, Area, AreaChart } from 'recharts';
 import { getAllUsers } from '../../api/userService';
 import { getAllBookings } from '../../api/bookingService';
 import { getAllServices } from '../../api/serviceService';
@@ -48,6 +52,19 @@ const AdminDashboard: React.FC = () => {
   });
   const [recentBookings, setRecentBookings] = useState<RecentBooking[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const pieData = [
+    { name: 'Pending', value: stats.pendingBookings, color: '#60a5fa' },
+    { name: 'Completed', value: stats.completedBookings, color: '#1e40af' }
+  ];
+
+  const barColors = ['#1e40af', '#2563eb', '#3b82f6', '#60a5fa'];
+  const chartData = [
+    { name: 'Customers', value: stats.totalUsers },
+    { name: 'Workers', value: stats.totalWorkers },
+    { name: 'Services', value: stats.totalServices },
+    { name: 'Bookings', value: stats.totalBookings }
+  ];
 
   const fetchDashboardData = useCallback(async () => {
     try {
@@ -94,25 +111,37 @@ const AdminDashboard: React.FC = () => {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
-  const StatCard = ({ icon: Icon, title, value, color, bgColor }: {
+  const StatCard = ({ icon: Icon, title, value, color, bgColor, trend }: {
     icon: React.ComponentType<{ className?: string }>;
     title: string;
     value: number;
     color: string;
     bgColor: string;
+    trend?: string;
   }) => (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`bg-white rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow`}
+      whileHover={{ scale: 1.02, y: -2 }}
+      transition={{ type: "spring", stiffness: 300 }}
+      className="group relative overflow-hidden bg-white/80 backdrop-blur-lg rounded-2xl p-4 sm:p-6 border border-white/20 shadow-lg hover:shadow-2xl transition-all duration-300"
     >
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-xs md:text-sm font-medium text-gray-600">{title}</p>
-          <p className="text-2xl md:text-3xl font-bold text-gray-900 mt-1">{value}</p>
+      <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+      <div className="relative z-10">
+        <div className="flex items-center justify-between mb-4">
+          <div className={`p-3 rounded-xl ${bgColor} shadow-sm`}>
+            <Icon className={`w-6 h-6 ${color}`} />
+          </div>
+          {trend && (
+            <div className="flex items-center gap-1 text-green-600">
+              <TrendingUp className="w-4 h-4" />
+              <span className="text-sm font-medium">{trend}</span>
+            </div>
+          )}
         </div>
-        <div className={`p-2 md:p-3 rounded-xl ${bgColor}`}>
-          <Icon className={`w-5 h-5 md:w-6 md:h-6 ${color}`} />
+        <div>
+          <p className="text-sm font-medium text-slate-600 mb-1">{title}</p>
+          <p className="text-3xl font-bold text-slate-900">{value.toLocaleString()}</p>
         </div>
       </div>
     </motion.div>
@@ -120,187 +149,444 @@ const AdminDashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 pt-20 md:pt-28 pb-10 md:pb-20 px-4 md:px-8 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-10 w-10 md:h-12 md:w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 text-sm md:text-base">Loading dashboard...</p>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 pt-16 sm:pt-20 md:pt-28 pb-8 sm:pb-10 md:pb-20 px-3 sm:px-4 md:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-4 border-indigo-200 border-t-indigo-600 mx-auto mb-4"></div>
+            <p className="text-slate-600 text-base sm:text-lg font-medium">Loading dashboard...</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-10 pb-10 md:pb-20 px-4 md:px-8">
-      <div className="max-w-7xl px-4 md:px-10 mx-auto">
-        {/* Header */}
-        <div className="mb-6 md:mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-gray-600 mt-2 text-sm md:text-base">Overview of your manpower platform</p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-gray-100 pt-10 pb-8 sm:pb-10 md:pb-20 px-4 md:px-8">
+      <div className="max-w-7xl md:px-10 mx-auto">
+        {/* Modern Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8 md:mb-12"
+        >
+          <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
+            <div>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-900 bg-clip-text text-transparent">
+                Admin Dashboard
+              </h1>
+              <p className="text-slate-600 mt-2 text-sm sm:text-base md:text-lg font-medium">
+                Comprehensive overview of your manpower platform
+              </p>
+            </div>
+            <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-3">
+              <div className="flex items-center gap-2 px-3 py-2 sm:px-4 bg-white/80 backdrop-blur-sm rounded-full border border-slate-200 shadow-sm">
+                <Activity className="w-4 h-4 text-green-500" />
+                <span className="text-sm font-medium text-slate-700">System Active</span>
+              </div>
+              <div className="text-left sm:text-right">
+                <p className="text-xs text-slate-500">Last updated</p>
+                <p className="text-sm font-medium text-slate-700">{new Date().toLocaleTimeString()}</p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
+        {/* Primary Stats Grid */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+        >
           <StatCard
             icon={Users}
             title="Total Customers"
             value={stats.totalUsers}
             color="text-blue-600"
-            bgColor="bg-blue-50"
+            bgColor="bg-gradient-to-br from-blue-100 to-blue-200"
+            trend="+12%"
           />
           <StatCard
             icon={UserCheck}
             title="Total Workers"
             value={stats.totalWorkers}
-            color="text-green-600"
-            bgColor="bg-green-50"
+            color="text-blue-600"
+            bgColor="bg-gradient-to-br from-blue-100 to-blue-200"
+            trend="+8%"
           />
           <StatCard
             icon={Briefcase}
             title="Total Services"
             value={stats.totalServices}
-            color="text-purple-600"
-            bgColor="bg-purple-50"
+            color="text-blue-600"
+            bgColor="bg-gradient-to-br from-blue-100 to-blue-200"
+            trend="+15%"
           />
           <StatCard
             icon={Calendar}
             title="Total Bookings"
             value={stats.totalBookings}
-            color="text-orange-600"
-            bgColor="bg-orange-50"
+            color="text-blue-600"
+            bgColor="bg-gradient-to-br from-blue-100 to-blue-200"
+            trend="+23%"
           />
-        </div>
+        </motion.div>
 
-        {/* Additional Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+        {/* Secondary Stats */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8"
+        >
           <StatCard
             icon={Clock}
             title="Pending Bookings"
             value={stats.pendingBookings}
-            color="text-yellow-600"
-            bgColor="bg-yellow-50"
+            color="text-blue-600"
+            bgColor="bg-gradient-to-br from-blue-100 to-blue-200"
           />
           <StatCard
             icon={CheckCircle}
             title="Completed Bookings"
             value={stats.completedBookings}
-            color="text-emerald-600"
-            bgColor="bg-emerald-50"
+            color="text-blue-600"
+            bgColor="bg-gradient-to-br from-blue-100 to-blue-200"
           />
           <StatCard
             icon={MessageSquare}
             title="Pending Feedbacks"
             value={stats.pendingFeedbacks}
-            color="text-pink-600"
-            bgColor="bg-pink-50"
+            color="text-blue-600"
+            bgColor="bg-gradient-to-br from-blue-100 to-blue-200"
           />
-        </div>
+        </motion.div>
+
+        {/* Analytics Charts */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8"
+        >
+          {/* Overview Chart - Desktop */}
+          <motion.div
+            className="hidden lg:block lg:col-span-2 bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-lg"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <BarChart3 className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">Platform Overview</h3>
+                <p className="text-sm text-slate-600">Key metrics at a glance</p>
+              </div>
+            </div>
+            <ResponsiveContainer width="100%" height={320}>
+              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis
+                  dataKey="name"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12, fill: '#64748b' }}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12, fill: '#64748b' }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'white',
+                    border: 'none',
+                    borderRadius: '12px',
+                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
+                  }}
+                />
+                <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={barColors[index]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </motion.div>
+
+          {/* Overview Chart - Mobile Cards */}
+          <motion.div
+            className="lg:hidden bg-white/80 backdrop-blur-lg rounded-2xl p-4 sm:p-6 border border-white/20 shadow-lg"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="text-base sm:text-lg font-bold text-slate-900">Platform Overview</h3>
+                <p className="text-xs sm:text-sm text-slate-600">Key metrics breakdown</p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              {chartData.map((item, index) => (
+                <div key={item.name} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: barColors[index] }}
+                    ></div>
+                    <span className="text-sm font-medium text-slate-700">{item.name}</span>
+                  </div>
+                  <span className="text-lg font-bold text-slate-900">{item.value.toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Booking Status Chart - Desktop */}
+          <motion.div
+            className="hidden lg:block bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-lg"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Activity className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">Booking Status</h3>
+                <p className="text-sm text-slate-600">Completion rates</p>
+              </div>
+            </div>
+            <ResponsiveContainer width="100%" height={320}>
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'white',
+                    border: 'none',
+                    borderRadius: '12px',
+                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
+                  }}
+                />
+                <Legend
+                  verticalAlign="bottom"
+                  height={36}
+                  formatter={(value, entry) => (
+                    <span style={{ color: '#374151', fontSize: '14px', fontWeight: '500' }}>
+                      {entry.payload.name}: {entry.payload.value}
+                    </span>
+                  )}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </motion.div>
+
+          {/* Booking Status Chart - Mobile Cards */}
+          <motion.div
+            className="lg:hidden bg-white/80 backdrop-blur-lg rounded-2xl p-4 sm:p-6 border border-white/20 shadow-lg"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-emerald-100 rounded-lg">
+                <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
+              </div>
+              <div>
+                <h3 className="text-base sm:text-lg font-bold text-slate-900">Booking Status</h3>
+                <p className="text-xs sm:text-sm text-slate-600">Completion breakdown</p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              {pieData.map((item, index) => {
+                const total = pieData.reduce((sum, data) => sum + data.value, 0);
+                const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : '0';
+                return (
+                  <div key={item.name} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: item.color }}
+                      ></div>
+                      <span className="text-sm font-medium text-slate-700">{item.name}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-lg font-bold text-slate-900">{item.value}</span>
+                      <span className="text-xs text-slate-500 ml-1">({percentage}%)</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        </motion.div>
 
         {/* Recent Bookings */}
-        <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-100 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 md:mb-6 gap-2">
-            <h2 className="text-lg md:text-xl font-bold text-gray-900">Recent Bookings</h2>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-lg mb-8"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Calendar className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">Recent Bookings</h3>
+                <p className="text-sm text-slate-600">Latest booking activities</p>
+              </div>
+            </div>
             <button
               onClick={() => navigate('/admin/bookings')}
-              className="text-blue-600 hover:text-blue-700 text-sm font-medium self-start sm:self-auto"
+              className="px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium rounded-lg transition-colors duration-200 flex items-center gap-2"
             >
-              View All →
+              <span>View All</span>
+              <TrendingUp className="w-4 h-4 text-blue-600" />
             </button>
           </div>
 
-          <div className="space-y-3 md:space-y-4">
-            {recentBookings.map((booking) => (
+          <div className="space-y-4">
+            {recentBookings.map((booking, index) => (
               <motion.div
                 key={booking.booking_id}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="p-3 md:p-4 bg-gray-50 rounded-lg md:rounded-xl"
+                transition={{ delay: index * 0.1 }}
+                className="group p-3 sm:p-4 bg-gradient-to-r from-slate-50 to-white rounded-xl border border-slate-200/50 hover:border-slate-300 hover:shadow-md transition-all duration-200"
               >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex items-center space-x-3 md:space-x-4">
-                    <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Calendar className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
+                <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+                  <div className="flex items-center space-x-3 sm:space-x-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium text-gray-900 text-sm md:text-base truncate">
+                      <p className="font-semibold text-slate-900 text-sm sm:text-base">
                         {booking.customer_first_name || 'Unknown'} {booking.customer_last_name || ''}
                       </p>
-                      <p className="text-xs md:text-sm text-gray-600 truncate">{booking.service_name}</p>
+                      <p className="text-xs sm:text-sm text-slate-600 mt-1">{booking.service_name}</p>
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 sm:flex-shrink-0">
-                    <span className={`px-2 py-1 md:px-3 md:py-1 rounded-full text-xs font-medium self-start sm:self-auto ${
+                  <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4 sm:flex-shrink-0">
+                    <span className={`px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs font-semibold self-start sm:self-auto ${
                       booking.booking_status === 'completed'
-                        ? 'bg-green-100 text-green-800'
+                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
                         : booking.booking_status === 'pending'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-blue-100 text-blue-800'
+                        ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                        : 'bg-blue-100 text-blue-800 border border-blue-200'
                     }`}>
-                      {booking.booking_status}
+                      {booking.booking_status.charAt(0).toUpperCase() + booking.booking_status.slice(1)}
                     </span>
-                    <span className="text-xs md:text-sm text-gray-500">
-                      {new Date(booking.created_at).toLocaleDateString()}
-                    </span>
+                    <div className="text-left sm:text-right">
+                      <p className="text-xs text-slate-500">Booked on</p>
+                      <p className="text-xs sm:text-sm font-medium text-slate-700">
+                        {new Date(booking.created_at).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric'
+                        })}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </motion.div>
             ))}
           </div>
-        </div>
+        </motion.div>
 
         {/* Quick Actions */}
-        <div className="mt-6 md:mt-8 bg-white rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-100 shadow-sm">
-          <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4 md:mb-6">Quick Actions</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-            <button
-              onClick={() => navigate('/admin/users')}
-              className="flex items-center space-x-3 p-3 md:p-4 bg-blue-50 hover:bg-blue-100 rounded-lg md:rounded-xl transition-colors"
-            >
-              <Users className="w-4 h-4 md:w-5 md:h-5 text-blue-600 flex-shrink-0" />
-              <span className="font-medium text-blue-900 text-sm md:text-base">Manage Users</span>
-            </button>
-
-            <button
-              onClick={() => navigate('/admin/workers')}
-              className="flex items-center space-x-3 p-3 md:p-4 bg-green-50 hover:bg-green-100 rounded-lg md:rounded-xl transition-colors"
-            >
-              <UserCheck className="w-4 h-4 md:w-5 md:h-5 text-green-600 flex-shrink-0" />
-              <span className="font-medium text-green-900 text-base">Manage Workers</span>
-            </button>
-
-            <button
-              onClick={() => navigate('/admin/bookings')}
-              className="flex items-center space-x-3 p-3 md:p-4 bg-indigo-50 hover:bg-indigo-100 rounded-lg md:rounded-xl transition-colors"
-            >
-              <Calendar className="w-4 h-4 md:w-5 md:h-5 text-indigo-600 flex-shrink-0" />
-              <span className="font-medium text-indigo-900 text-base">Manage Bookings</span>
-            </button>
-
-            <button
-              onClick={() => navigate('/admin/services')}
-              className="flex items-center space-x-3 p-3 md:p-4 bg-purple-50 hover:bg-purple-100 rounded-lg md:rounded-xl transition-colors"
-            >
-              <Briefcase className="w-4 h-4 md:w-5 md:h-5 text-purple-600 flex-shrink-0" />
-              <span className="font-medium text-purple-900 text-base">Manage Services</span>
-            </button>
-
-            <button
-              onClick={() => navigate('/admin/feedbacks')}
-              className="flex items-center space-x-3 p-3 md:p-4 bg-pink-50 hover:bg-pink-100 rounded-lg md:rounded-xl transition-colors"
-            >
-              <MessageSquare className="w-4 h-4 md:w-5 md:h-5 text-pink-600 flex-shrink-0" />
-              <span className="font-medium text-pink-900 text-base">Manage Feedbacks</span>
-            </button>
-
-            <button
-              onClick={() => navigate('/admin/settings')}
-              className="flex items-center space-x-3 p-3 md:p-4 bg-gray-50 hover:bg-gray-100 rounded-lg md:rounded-xl transition-colors"
-            >
-              <Settings className="w-4 h-4 md:w-5 md:h-5 text-gray-600 flex-shrink-0" />
-              <span className="font-medium text-gray-900 text-base">Settings</span>
-            </button>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-lg"
+        >
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Settings className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">Quick Actions</h3>
+              <p className="text-sm text-slate-600">Manage your platform efficiently</p>
+            </div>
           </div>
-        </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            {[
+              {
+                icon: Users,
+                label: 'Manage Users',
+                path: '/admin/users',
+                color: 'white',
+                description: 'View and manage customer accounts'
+              },
+              {
+                icon: UserCheck,
+                label: 'Manage Workers',
+                path: '/admin/workers',
+                color: 'white',
+                description: 'Oversee worker profiles and availability'
+              },
+              {
+                icon: Calendar,
+                label: 'Manage Bookings',
+                path: '/admin/bookings',
+                color: 'white',
+                description: 'Handle booking requests and schedules'
+              },
+              {
+                icon: Briefcase,
+                label: 'Manage Services',
+                path: '/admin/services',
+                color: 'white',
+                description: 'Configure available services'
+              },
+              {
+                icon: MessageSquare,
+                label: 'Manage Feedbacks',
+                path: '/admin/feedbacks',
+                color: 'white',
+                description: 'Review and respond to feedback'
+              },
+              {
+                icon: Settings,
+                label: 'System Settings',
+                path: '/admin/settings',
+                color: 'white',
+                description: 'Configure platform settings'
+              }
+            ].map((action, index) => (
+              <motion.button
+                key={action.path}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.6 + index * 0.1 }}
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => navigate(action.path)}
+                className={`group p-3 sm:p-4 bg-gradient-to-br from-${action.color}-50 to-${action.color}-100 hover:from-${action.color}-100 hover:to-${action.color}-200 rounded-xl border border-${action.color}-200/50 hover:border-${action.color}-300 hover:shadow-lg transition-all duration-200 text-left min-h-[80px] sm:min-h-[88px]`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className={`p-2 bg-${action.color}-100 rounded-lg group-hover:bg-${action.color}-200 transition-colors flex-shrink-0`}>
+                    <action.icon className={`w-4 h-4 sm:w-5 sm:h-5 text-${action.color}-600`} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className={`font-semibold text-${action.color}-900 text-sm sm:text-base`}>{action.label}</h4>
+                    <p className={`text-xs text-${action.color}-700 mt-1 leading-tight`}>{action.description}</p>
+                  </div>
+                </div>
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
       </div>
     </div>
   );
