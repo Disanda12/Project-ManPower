@@ -63,8 +63,14 @@ router.put('/:id/role', authenticateToken, requireAdmin, async (req, res) => {
     const { id } = req.params;
     const { user_type } = req.body;
 
-    if (!['customer', 'admin', 'worker'].includes(user_type)) {
-        return res.status(400).json({ message: 'Invalid user type' });
+    // Only allow changing between customer and admin roles in user management
+    if (!['customer', 'admin'].includes(user_type)) {
+        return res.status(400).json({ message: 'Invalid user type. Only customer and admin roles are allowed in user management.' });
+    }
+
+    // Prevent admin from changing their own role
+    if (req.user.id == id) {
+        return res.status(400).json({ message: 'Cannot change your own role' });
     }
 
     try {
