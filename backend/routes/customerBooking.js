@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const { authenticateToken, } = require('../middleware/auth');
+const { createNotification } = require('./notifications');
 
 // Add 'authenticateToken' here to protect the route
 router.post('/create', authenticateToken, async (req, res) => {
@@ -40,6 +41,24 @@ router.post('/create', authenticateToken, async (req, res) => {
             advance_amount_lkr,
             location
         ]);
+
+        const booking_id = result.insertId;
+
+        // Notify all admins about the new booking
+        try {
+            const [admins] = await db.query('SELECT user_id FROM users WHERE user_type = ?', ['admin']);
+            for (const admin of admins) {
+                await createNotification(
+                    admin.user_id,
+                    'New Booking Requires Worker Assignment',
+                    `A new booking (ID: ${booking_id}) has been created and needs a worker to be assigned.`,
+                    'general'
+                );
+            }
+        } catch (notificationErr) {
+            console.error('Error creating admin notifications:', notificationErr);
+            // Don't fail the booking creation if notification fails
+        }
 
         res.status(201).json({ 
             success: true, 

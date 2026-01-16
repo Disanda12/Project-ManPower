@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const { authenticateToken } = require('../middleware/auth');
+const { createNotification } = require('./notifications');
 
 // Create a new booking (customer or admin)
 router.post('/', authenticateToken, async (req, res) => {
@@ -235,6 +236,18 @@ router.put('/:bookingId/assign-workers', authenticateToken, async (req, res) => 
 
         // Update booking status to 'assigned'
         await db.query('UPDATE bookings SET booking_status = ? WHERE booking_id = ?', ['assigned', bookingId]);
+
+        // Get customer_id for notification
+        const [customerData] = await db.query('SELECT customer_id FROM bookings WHERE booking_id = ?', [bookingId]);
+        const customerId = customerData[0].customer_id;
+
+        // Create notification for the customer
+        await createNotification(
+            customerId,
+            'Worker Assigned to Your Booking',
+            `A worker has been assigned to your booking #${bookingId}. Your service will begin soon.`,
+            'assignment'
+        );
 
         res.json({
             message: `${workerIds.length} worker(s) assigned successfully`,
