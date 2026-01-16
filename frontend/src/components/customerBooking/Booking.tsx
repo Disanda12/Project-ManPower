@@ -6,7 +6,6 @@ import {
 } from 'lucide-react';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-// 1. Added useLocation to read URL params
 import { useNavigate, useLocation } from 'react-router-dom'; 
 import { fetchAvailableServices, Service } from '../../api/serviceService';
 import { notify } from '../utils/notify';
@@ -14,7 +13,7 @@ import { createBooking } from '../../api/bookingService';
 
 const HireWorkerForm = () => {
   const navigate = useNavigate();
-  const location = useLocation(); // 2. Access location object
+  const location = useLocation(); 
   
   const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
   const [startDate, endDate] = dateRange;
@@ -30,13 +29,14 @@ const HireWorkerForm = () => {
     description: '' 
   });
 
+  // Load services and handle auto-selection from URL
   useEffect(() => {
     const loadServices = async () => {
       try {
         const data = await fetchAvailableServices();
         setServices(data);
 
-        // 3. Logic to auto-select service from URL
+        // Parse query params (e.g., ?service=Masonry)
         const queryParams = new URLSearchParams(location.search);
         const serviceNameFromUrl = queryParams.get('service');
 
@@ -46,13 +46,11 @@ const HireWorkerForm = () => {
           );
           if (matchedService) {
             setSelectedService(matchedService);
-          } else {
-            // Fallback to first service if name doesn't match
-            if (data.length > 0) setSelectedService(data[0]);
+          } else if (data.length > 0) {
+            setSelectedService(data[0]);
           }
-        } else {
-          // Default selection if no URL param exists
-          if (data.length > 0) setSelectedService(data[0]);
+        } else if (data.length > 0) {
+          setSelectedService(data[0]);
         }
       } catch (err) {
         notify.error("Error loading services");
@@ -61,8 +59,9 @@ const HireWorkerForm = () => {
       }
     };
     loadServices();
-  }, [location.search]); // 4. Re-run if URL changes
+  }, [location.search]); // Triggered if the URL changes (e.g., after login redirect)
 
+  // Calculate days based on date selection
   useEffect(() => {
     if (startDate && endDate) {
       const diff = Math.ceil(Math.abs(endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
@@ -159,7 +158,10 @@ const HireWorkerForm = () => {
                 </label>
                 <div className="relative">
                   <DatePicker 
-                    selectsRange startDate={startDate} endDate={endDate} minDate={new Date()}
+                    selectsRange 
+                    startDate={startDate} 
+                    endDate={endDate} 
+                    minDate={new Date()}
                     onChange={(update: any) => setDateRange(update)} 
                     className="w-full h-14 bg-gray-50 border-2 border-gray-100 rounded-xl px-4 font-bold text-gray-700 outline-none focus:border-blue-600 transition-all cursor-pointer"
                     placeholderText="Click to select dates"
@@ -173,9 +175,15 @@ const HireWorkerForm = () => {
                   <Users size={14} /> 3. Workforce Needed
                 </label>
                 <div className="flex items-center bg-gray-50 rounded-xl border-2 border-gray-100 h-14 px-2">
-                  <button onClick={() => setFormData({...formData, numWorkers: Math.max(1, formData.numWorkers - 1)})} className="w-10 h-10 bg-white border border-gray-200 rounded-lg text-gray-600 font-bold hover:bg-gray-100 transition-colors">-</button>
+                  <button 
+                    onClick={() => setFormData({...formData, numWorkers: Math.max(1, formData.numWorkers - 1)})} 
+                    className="w-10 h-10 bg-white border border-gray-200 rounded-lg text-gray-600 font-bold hover:bg-gray-100 transition-colors"
+                  >-</button>
                   <span className="flex-1 text-center font-bold text-xl text-gray-800">{formData.numWorkers} Staff</span>
-                  <button onClick={() => setFormData({...formData, numWorkers: formData.numWorkers + 1})} className="w-10 h-10 bg-white border border-gray-200 rounded-lg text-gray-600 font-bold hover:bg-gray-100 transition-colors">+</button>
+                  <button 
+                    onClick={() => setFormData({...formData, numWorkers: formData.numWorkers + 1})} 
+                    className="w-10 h-10 bg-white border border-gray-200 rounded-lg text-gray-600 font-bold hover:bg-gray-100 transition-colors"
+                  >+</button>
                 </div>
               </div>
             </div>
@@ -187,6 +195,7 @@ const HireWorkerForm = () => {
               </label>
               <input 
                 placeholder="Enter city and street address..."
+                value={formData.address}
                 onChange={(e) => setFormData({...formData, address: e.target.value})}
                 className="w-full h-14 bg-gray-50 border-2 border-gray-100 rounded-xl px-4 font-bold text-gray-700 placeholder:text-gray-400 focus:border-blue-600 outline-none transition-all"
               />
@@ -198,7 +207,8 @@ const HireWorkerForm = () => {
                 <MessageSquare size={14} /> 5. Job Description
               </label>
               <textarea 
-                placeholder="Briefly describe the tasks (e.g., painting 2 rooms, fixing plumbing leak)..."
+                placeholder="Briefly describe the tasks..."
+                value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
                 className="w-full h-32 bg-gray-50 border-2 border-gray-100 rounded-xl p-4 font-bold text-gray-700 placeholder:text-gray-400 focus:border-blue-600 outline-none transition-all resize-none shadow-sm"
               />
@@ -217,7 +227,7 @@ const HireWorkerForm = () => {
                   <p className="text-xs font-bold text-blue-200 uppercase mb-1">Service</p>
                   <p className="text-2xl font-bold">{selectedService?.service_name || 'Not Selected'}</p>
                 </div>
-                <p className="font-medium text-blue-100">LKR {Number(selectedService?.daily_rate_lkr).toLocaleString()}/day</p>
+                <p className="font-medium text-blue-100">LKR {Number(selectedService?.daily_rate_lkr || 0).toLocaleString()}/day</p>
               </div>
 
               <div className="flex justify-between items-end border-b border-blue-400 pb-5">
