@@ -409,6 +409,9 @@ const ServiceManagement: React.FC = () => {
                                     Service Name
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Description
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Daily Rate
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -425,17 +428,11 @@ const ServiceManagement: React.FC = () => {
                         <tbody className="bg-white divide-y divide-gray-200">
                             {paginatedServices.map((service) => (
                                 <tr key={service.service_id} onClick={() => handleViewServiceDetails(service)} className="hover:bg-gray-50 cursor-pointer">
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div>
-                                            <div className="text-base font-medium text-gray-900">
-                                                {service.service_name}
-                                            </div>
-                                            {service.description && (
-                                                <div className="text-base text-gray-500">
-                                                    {service.description}
-                                                </div>
-                                            )}
-                                        </div>
+                                    <td className="px-6 py-4 whitespace-nowrap text-base font-medium text-gray-900">
+                                        {service.service_name}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-base text-gray-500 max-w-64 truncate">
+                                        {service.description || '-'}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
                                         LKR {service.daily_rate_lkr.toLocaleString()}
