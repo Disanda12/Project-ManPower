@@ -1,109 +1,126 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  BrickWall, Hammer, Sparkles, Truck, 
-  Users, Droplets, Zap, Paintbrush, 
-  ArrowRight, Search 
+  ShieldCheck, 
+  ArrowRight, 
+  Loader2,
+  Construction
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
-
-const industries = [
-  { icon: BrickWall, name: 'Masonry', providers: '450+', color: 'bg-orange-50 text-orange-700', description: 'Expert brickwork, stone setting, and concrete finishing.' },
-  { icon: Hammer, name: 'Carpentry', providers: '380+', color: 'bg-blue-50 text-[#00467f]', description: 'Custom woodwork, framing, and furniture assembly.' },
-  { icon: Sparkles, name: 'Maids & Cleaning', providers: '1,200+', color: 'bg-cyan-50 text-cyan-700', description: 'Professional residential and commercial cleaning services.' },
-  { icon: Truck, name: 'Movers', providers: '290+', color: 'bg-indigo-50 text-indigo-700', description: 'Safe and efficient furniture moving and logistics.' },
-  { icon: Users, name: 'General Helpers', providers: '2,100+', color: 'bg-emerald-50 text-emerald-700', description: 'Reliable extra hands for loading, yard work, and events.' },
-  { icon: Droplets, name: 'Plumbing', providers: '540+', color: 'bg-blue-50 text-blue-600', description: 'Fixing leaks, installations, and emergency pipe repairs.' },
-  { icon: Zap, name: 'Electricians', providers: '410+', color: 'bg-yellow-50 text-yellow-700', description: 'Wiring, lighting installation, and electrical safety checks.' },
-  { icon: Paintbrush, name: 'Painters', providers: '320+', color: 'bg-rose-50 text-rose-700', description: 'Interior and exterior painting with precision finish.' },
-];
+import { Link, useNavigate } from 'react-router-dom';
+import { fetchAvailableServices, Service } from '../../api/serviceService';
+import { notify } from '../utils/notify';
 
 const IndustriesPage = () => {
+  const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadServices = async () => {
+      try {
+        const data = await fetchAvailableServices();
+        setServices(data);
+      } catch (err) {
+        notify.error("Error loading services");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadServices();
+  }, []);
+
   return (
     <div className="min-h-screen bg-white">
-      {/* --- HERO SECTION --- */}
-      <section className="bg-[#00467f] pt-32 pb-20 px-4">
-        <div className="max-w-7xl mx-auto text-center">
-          <motion.h1 
-            initial={{ opacity: 0, y: -20 }}
+      {/* --- HERO SECTION (Search Removed) --- */}
+      <section className="bg-[#00467f] pt-48 pb-32 px-4 relative overflow-hidden">
+        {/* Subtle Background Icon Pattern */}
+        <Construction className="absolute -right-20 -bottom-20 text-white/5 w-96 h-96 -rotate-12" />
+        
+        <div className="relative max-w-7xl mx-auto text-center z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-6xl font-extrabold text-white mb-6"
+            transition={{ duration: 0.8, ease: "easeOut" }}
           >
-            Industries We <span className="text-blue-300">Serve</span>
-          </motion.h1>
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-blue-100 text-lg max-w-2xl mx-auto mb-10"
-          >
-            Connecting you with vetted professionals across diverse trades. From construction to cleaning, we have the right talent for your needs.
-          </motion.p>
-          
-          {/* Search Bar Decoration */}
-          <div className="max-w-xl mx-auto relative">
-            <input 
-              type="text" 
-              placeholder="Search for a service..." 
-              className="w-full py-4 px-6 rounded-full bg-white/10 border border-white/20 text-white placeholder-blue-200 outline-none focus:ring-2 focus:ring-blue-400 backdrop-blur-md"
-            />
-            <Search className="absolute right-5 top-4 text-blue-200" size={24} />
+            <h1 className="text-6xl md:text-8xl font-black text-white mb-8 tracking-tighter">
+              Industries We <span className="text-blue-300">Serve</span>
+            </h1>
+            <p className="text-blue-100 text-xl md:text-2xl max-w-3xl mx-auto font-medium leading-relaxed">
+              Explore our comprehensive range of specialized manpower categories, 
+              each backed by verified professionals ready for your next project.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* --- DYNAMIC GRID --- */}
+      <section className="py-24 px-4 max-w-7xl mx-auto">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <Loader2 className="animate-spin text-[#00467f] mb-4" size={48} />
+            <p className="text-gray-500 font-bold uppercase tracking-widest text-sm">Synchronizing Services...</p>
           </div>
-        </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {services.map((service, index) => (
+              <motion.div
+                key={service.service_id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.05 }}
+                onClick={() => navigate(`/booking?service=${service.service_name}`)}
+                className="group flex flex-col bg-white rounded-[2rem] border border-gray-100 p-10 hover:shadow-[0_30px_60px_-15px_rgba(0,70,127,0.12)] transition-all duration-500 cursor-pointer relative"
+              >
+                {/* Status Indicator */}
+                <div className="flex items-center space-x-2 mb-6">
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                    <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Active Trade</span>
+                </div>
+
+                <div className="w-14 h-14 bg-blue-50 text-[#00467f] rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-[#00467f] group-hover:text-white transition-all duration-500">
+                  <ShieldCheck size={30} />
+                </div>
+
+                <h3 className="text-2xl font-black text-gray-900 mb-4 group-hover:text-[#00467f] transition-colors">
+                  {service.service_name}
+                </h3>
+                
+                {/* --- BACKEND DESCRIPTION --- */}
+                <div className="min-h-[80px]">
+                    <p className="text-gray-500 leading-relaxed font-medium line-clamp-4 group-hover:text-gray-700 transition-colors">
+                      {service.description}
+                    </p>
+                </div>
+
+                <div className="mt-8 pt-8 border-t border-gray-50 flex items-center text-[#00467f] font-bold text-sm">
+                  <span>Start Booking</span>
+                  <ArrowRight size={18} className="ml-2 transform group-hover:translate-x-3 transition-transform" />
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </section>
 
-      {/* --- INDUSTRIES GRID --- */}
-      <section className="py-20 px-4 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {industries.map((item, index) => (
-            <motion.div
-              key={item.name}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ y: -10 }}
-              className="group bg-white p-8 rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 relative overflow-hidden"
-            >
-              {/* Decorative Circle */}
-              <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-10 transition-transform group-hover:scale-150 ${item.color.split(' ')[0]}`}></div>
-
-              <div className={`w-16 h-16 ${item.color} rounded-2xl flex items-center justify-center mb-6 shadow-sm`}>
-                <item.icon size={32} />
-              </div>
-
-              <h3 className="text-xl font-bold text-gray-900 mb-2">{item.name}</h3>
-              <p className="text-sm text-gray-500 mb-4 leading-relaxed">
-                {item.description}
-              </p>
-
-              <div className="flex items-center justify-between mt-auto">
-                <span className="text-xs font-bold text-[#00467f] uppercase tracking-wider">
-                  {item.providers} Verified Pros
-                </span>
-                {/* <Link to="/booking" className="text-gray-300 group-hover:text-[#00467f] transition-colors">
-                  <ArrowRight size={20} />
-                </Link> */}
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* --- CALL TO ACTION --- */}
-      <section className="bg-gray-50 py-20 px-4">
-        <div className="max-w-4xl mx-auto bg-[#00467f] rounded-[3rem] p-12 text-center text-white relative overflow-hidden shadow-2xl">
+      {/* --- CTA --- */}
+      <section className="pb-24 px-4">
+        <div className="max-w-6xl mx-auto bg-gray-900 rounded-[3rem] p-12 md:p-20 text-center text-white relative overflow-hidden shadow-2xl">
           <div className="relative z-10">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">Can't find what you're looking for?</h2>
-            <p className="text-blue-100 mb-8">We are constantly expanding our network. Contact us for custom staffing solutions.</p>
-            <Link to="/contact-us">
-                <button className="bg-white text-[#00467f] px-10 py-4 rounded-full font-bold hover:bg-blue-50 transition-colors shadow-lg">
-                  Contact Support
-                </button>
-            </Link>
+            <h2 className="text-4xl md:text-5xl font-black mb-6">Looking for a specific skill set?</h2>
+            <p className="text-gray-400 text-lg mb-10 max-w-2xl mx-auto leading-relaxed">
+              Our network covers more than just these categories. Contact our support team for specialized, large-scale, or custom project requirements.
+            </p>
+            <div className="flex justify-center">
+                <Link to="/contact-us">
+                    <button className="bg-white text-gray-900 px-12 py-5 rounded-full font-black text-lg hover:bg-blue-50 hover:scale-105 transition-all active:scale-95 shadow-xl">
+                        Contact Support Team
+                    </button>
+                </Link>
+            </div>
           </div>
-          {/* Background decoration */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3"></div>
+          {/* Subtle decoration */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
         </div>
       </section>
     </div>

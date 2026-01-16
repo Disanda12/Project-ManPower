@@ -6,13 +6,16 @@ import {
 } from 'lucide-react';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { useNavigate } from 'react-router-dom';
+// 1. Added useLocation to read URL params
+import { useNavigate, useLocation } from 'react-router-dom'; 
 import { fetchAvailableServices, Service } from '../../api/serviceService';
 import { notify } from '../utils/notify';
 import { createBooking } from '../../api/bookingService';
 
 const HireWorkerForm = () => {
   const navigate = useNavigate();
+  const location = useLocation(); // 2. Access location object
+  
   const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
   const [startDate, endDate] = dateRange;
   const [services, setServices] = useState<Service[]>([]);
@@ -32,7 +35,25 @@ const HireWorkerForm = () => {
       try {
         const data = await fetchAvailableServices();
         setServices(data);
-        if (data.length > 0) setSelectedService(data[0]);
+
+        // 3. Logic to auto-select service from URL
+        const queryParams = new URLSearchParams(location.search);
+        const serviceNameFromUrl = queryParams.get('service');
+
+        if (serviceNameFromUrl) {
+          const matchedService = data.find(
+            (s) => s.service_name.toLowerCase() === serviceNameFromUrl.toLowerCase()
+          );
+          if (matchedService) {
+            setSelectedService(matchedService);
+          } else {
+            // Fallback to first service if name doesn't match
+            if (data.length > 0) setSelectedService(data[0]);
+          }
+        } else {
+          // Default selection if no URL param exists
+          if (data.length > 0) setSelectedService(data[0]);
+        }
       } catch (err) {
         notify.error("Error loading services");
       } finally {
@@ -40,7 +61,7 @@ const HireWorkerForm = () => {
       }
     };
     loadServices();
-  }, []);
+  }, [location.search]); // 4. Re-run if URL changes
 
   useEffect(() => {
     if (startDate && endDate) {
@@ -90,7 +111,6 @@ const HireWorkerForm = () => {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center p-4 pt-24 pb-12">
-      
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -186,7 +206,7 @@ const HireWorkerForm = () => {
           </div>
         </div>
 
-        {/* RIGHT SIDE: SUMMARY (BRAND BLUE PANEL) */}
+        {/* RIGHT SIDE: SUMMARY */}
         <div className="lg:col-span-5 bg-blue-600 p-8 md:p-12 flex flex-col justify-between text-white relative">
           <div>
             <h2 className="text-sm font-black uppercase tracking-[0.2em] mb-12 text-blue-100">Booking Summary</h2>
