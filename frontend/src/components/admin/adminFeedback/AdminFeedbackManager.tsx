@@ -49,8 +49,8 @@ const AdminFeedbackManager = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-10 pb-20 px-4 md:px-8">
-      <div className="max-w-7xl px-4 md:px-10 mx-auto">
+    <div className="min-h-screen pt-28 pb-20 px-4 md:px-8">
+      <div className="max-w-7xl px-4 md:px-20">
         
         {/* Back Button */}
         <div className="mb-6">
