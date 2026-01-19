@@ -53,7 +53,8 @@ function App() {
             </ProtectedRoute>
           }/>
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/booking-history" element={<BookingHistory />} />
+            <Route path="/booking-history" element={
+              <BookingHistory />} />
             <Route path="/manage-bookings" element={<ManageBookings />} />
             <Route path="/industries" element={<IndustriesPage />} />
             <Route path="/sign-up" element={<SignUp />} />

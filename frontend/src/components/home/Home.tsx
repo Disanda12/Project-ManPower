@@ -3,6 +3,7 @@ import EnterpriseHero from './components/EnterpriseHero';
 import PersonaSplit from './components/PersonaSplit';
 import IndustryGrid from './components/IndustryGrid';
 import StatsSection from './components/StatsSection';
+import FeedbackCarousel from './components/FeedbackCarousel';
 
 
 const HomePage = () => {
@@ -20,7 +21,8 @@ const HomePage = () => {
 
       {/* 3. Service Categories Grid */}
       <IndustryGrid />
-
+      {/* 4. Customer Feedback Carousel */}
+      <FeedbackCarousel />
       {/* 4. Trust & Impact Statistics */}
       <StatsSection />
 

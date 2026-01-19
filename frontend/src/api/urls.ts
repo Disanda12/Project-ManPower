@@ -20,6 +20,7 @@ export const USER_ENDPOINTS = {
 export const FEEDBACK_ENDPOINTS = {
     SUBMIT: `${BASE_URL}/feedback/submit`,
     GET_BY_CUSTOMER: (id: number) => `${BASE_URL}/feedback/user/${id}`,
+    GET_TOP_APPROVED: `${BASE_URL}/feedback/approved-feedbacks`,
 } as const;
 export const SERVICE_ENDPOINTS = {
     GET_ALL: `${BASE_URL}/services/get-Services`,

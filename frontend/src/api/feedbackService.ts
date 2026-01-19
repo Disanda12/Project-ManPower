@@ -9,7 +9,13 @@ export interface FeedbackData {
     comment: string;
     
 }
-
+export interface ApprovedFeedback {
+    feedback_id: number;
+    customer_name: string;
+    profile_picture: string;
+    rating: number;
+    comment: string;
+}
 export const submitFeedback = async (data: FeedbackData): Promise<any> => {
     try {
         // Send as a simple JSON object instead of FormData
@@ -25,3 +31,12 @@ export const submitFeedback = async (data: FeedbackData): Promise<any> => {
         throw error.response?.data?.message || "Failed to submit feedback";
     }
 };
+
+export const getTopApprovedFeedbacks = async (): Promise<ApprovedFeedback[]> => {
+    try {
+        const response = await axios.get(FEEDBACK_ENDPOINTS.GET_TOP_APPROVED);
+        return response.data;
+    } catch (error: any) {
+        throw error.response?.data?.message || "Failed to load feedbacks";
+    }
+}
