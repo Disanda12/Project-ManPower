@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Jan 14, 2026 at 12:08 PM
+-- Generation Time: Jan 19, 2026 at 08:04 AM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.2.4
 
@@ -78,8 +78,15 @@ INSERT INTO `bookings` (`booking_id`, `customer_id`, `service_id`, `number_of_wo
 (6, 12, 8, 1, 'Garden maintenance and lawn mowing', '', '2026-01-17', '2026-01-17', 15000.00, 7500.00, 'pending', 'pending', '2026-01-09 10:41:01', '2026-01-09 10:41:01'),
 (7, 13, 9, 1, 'Fix leaking pipes in kitchen', '', '2026-01-18', '2026-01-18', 20000.00, 10000.00, 'completed', 'pending', '2026-01-09 10:41:01', '2026-01-12 08:58:48'),
 (10, 39, 2, 2, 'mm', 'mm', '2026-01-13', '2026-01-15', 12000.00, 3000.00, 'pending', 'pending', '2026-01-13 11:39:59', '2026-01-13 11:39:59'),
-(11, 24, 7, 4, 'gggg', 'ggg', '2026-01-15', '2026-01-15', 0.00, 0.00, 'pending', 'pending', '2026-01-14 05:18:58', '2026-01-14 05:18:58'),
-(12, 24, 2, 1, 'vv', 'vv', '2026-01-14', '2026-01-15', 4000.00, 1000.00, 'assigned', 'pending', '2026-01-14 05:20:10', '2026-01-14 07:58:19');
+(11, 24, 7, 4, 'gggg', 'ggg', '2026-01-15', '2026-01-15', 0.00, 0.00, 'assigned', 'pending', '2026-01-14 05:18:58', '2026-01-16 05:31:15'),
+(12, 24, 2, 1, 'vv', 'vv', '2026-01-14', '2026-01-15', 4000.00, 1000.00, 'assigned', 'pending', '2026-01-14 05:20:10', '2026-01-14 07:58:19'),
+(13, 39, 6, 1, 'ss', 'ss', '2026-01-14', '2026-01-15', 0.00, 0.00, 'assigned', 'pending', '2026-01-14 11:39:37', '2026-01-14 11:39:56'),
+(14, 39, 2, 1, 'ss', 'ss', '2026-01-16', '2026-01-17', 4000.00, 1000.00, 'pending', 'pending', '2026-01-16 06:26:17', '2026-01-16 06:26:17'),
+(15, 39, 1, 1, 'gg', 'gg', '2026-01-16', '2026-01-17', 3000.00, 750.00, 'pending', 'pending', '2026-01-16 06:28:26', '2026-01-16 06:28:26'),
+(16, 39, 7, 1, 'gg', 'gg', '2026-01-17', '2026-01-17', 0.00, 0.00, 'assigned', 'pending', '2026-01-16 06:34:01', '2026-01-16 06:40:16'),
+(17, 39, 2, 1, 'hh', 'hh', '2026-01-16', '2026-01-17', 4000.00, 1000.00, 'assigned', 'pending', '2026-01-16 06:40:41', '2026-01-16 07:28:53'),
+(18, 39, 9, 1, 'hh', 'hh', '2026-01-16', '2026-01-17', 0.00, 0.00, 'pending', 'pending', '2026-01-16 07:28:30', '2026-01-16 07:28:30'),
+(19, 39, 3, 1, 'gg', 'gg', '2026-01-16', '2026-01-17', 3600.00, 900.00, 'pending', 'pending', '2026-01-16 11:56:46', '2026-01-16 11:56:46');
 
 -- --------------------------------------------------------
 
@@ -102,7 +109,11 @@ CREATE TABLE `booking_workers` (
 
 INSERT INTO `booking_workers` (`booking_worker_id`, `booking_id`, `worker_id`, `assigned_by_admin_id`, `assigned_at`, `worker_status`) VALUES
 (8, 7, 7, NULL, '2026-01-12 08:57:57', 'assigned'),
-(9, 12, 1, NULL, '2026-01-14 07:58:19', 'assigned');
+(9, 12, 1, NULL, '2026-01-14 07:58:19', 'assigned'),
+(10, 13, 3, NULL, '2026-01-14 11:39:56', 'assigned'),
+(11, 11, 5, NULL, '2026-01-16 05:31:15', 'assigned'),
+(12, 16, 5, NULL, '2026-01-16 06:40:16', 'assigned'),
+(13, 17, 1, NULL, '2026-01-16 07:28:53', 'assigned');
 
 -- --------------------------------------------------------
 
@@ -116,6 +127,7 @@ CREATE TABLE `feedbacks` (
   `customer_id` int(11) NOT NULL,
   `rating` int(11) DEFAULT NULL CHECK (`rating` between 1 and 5),
   `comment` text DEFAULT NULL,
+  `status` enum('approved','reject','pending') NOT NULL,
   `photo_url` varchar(255) DEFAULT NULL,
   `submitted_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -135,6 +147,24 @@ CREATE TABLE `notifications` (
   `is_read` tinyint(1) DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `notifications`
+--
+
+INSERT INTO `notifications` (`notification_id`, `user_id`, `title`, `message`, `notification_type`, `is_read`, `created_at`) VALUES
+(1, 39, 'Worker Assigned to Your Booking', 'A worker has been assigned to your booking #13. Your service will begin soon.', 'assignment', 1, '2026-01-14 11:39:56'),
+(2, 24, 'Worker Assigned to Your Booking', 'A worker has been assigned to your booking #11. Your service will begin soon.', 'assignment', 1, '2026-01-16 05:31:15'),
+(4, 24, 'New Booking Requires Worker Assignment', 'A new booking (ID: 16) has been created and needs a worker to be assigned.', 'general', 1, '2026-01-16 06:34:01'),
+(5, 42, 'New Booking Requires Worker Assignment', 'A new booking (ID: 16) has been created and needs a worker to be assigned.', 'general', 0, '2026-01-16 06:34:01'),
+(6, 39, 'Worker Assigned to Your Booking', 'A worker has been assigned to your booking #16. Your service will begin soon.', 'assignment', 1, '2026-01-16 06:40:16'),
+(7, 24, 'New Booking Requires Worker Assignment', 'A new booking (ID: 17) has been created and needs a worker to be assigned.', 'general', 1, '2026-01-16 06:40:41'),
+(8, 42, 'New Booking Requires Worker Assignment', 'A new booking (ID: 17) has been created and needs a worker to be assigned.', 'general', 0, '2026-01-16 06:40:41'),
+(9, 24, 'New Booking Requires Worker Assignment', 'A new booking (ID: 18) has been created and needs a worker to be assigned.', 'general', 1, '2026-01-16 07:28:30'),
+(10, 42, 'New Booking Requires Worker Assignment', 'A new booking (ID: 18) has been created and needs a worker to be assigned.', 'general', 0, '2026-01-16 07:28:30'),
+(11, 39, 'Worker Assigned to Your Booking', 'A worker has been assigned to your booking #17. Your service will begin soon.', 'assignment', 1, '2026-01-16 07:28:53'),
+(12, 24, 'New Booking Requires Worker Assignment', 'A new booking (ID: 19) has been created and needs a worker to be assigned.', 'general', 1, '2026-01-16 11:56:46'),
+(13, 42, 'New Booking Requires Worker Assignment', 'A new booking (ID: 19) has been created and needs a worker to be assigned.', 'general', 0, '2026-01-16 11:56:46');
 
 -- --------------------------------------------------------
 
@@ -214,7 +244,7 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`user_id`, `email`, `password_hash`, `first_name`, `last_name`, `phone`, `address`, `user_type`, `profile_image`, `is_active`, `created_at`, `updated_at`) VALUES
 (8, 'olivia.rodriguez@inbox.com', '$2b$10$NTL88548Us3QmQeTsmGXBOTWtGC3Q5usNn0SJIf9u1vXFhGmuY.va', 'Mark Rodriguez', 'Donald Robinson', '5556784321', '741 Ash Avenue', 'worker', '', 1, '2026-01-09 08:44:18', '2026-01-12 05:47:58'),
 (9, 'test123@domain.com', '$2b$10$J6TcU66diEHDWoxg/8yPjuSoqZglBZQpu6BvpSrmY9hJQwLlQFrnK', 'Isabella Williams', 'Charles Lee', '5553698521', '543 Acacia Road', 'worker', '', 1, '2026-01-09 09:04:04', '2026-01-09 09:04:04'),
-(12, 'mike.davis@email.com', '$2b$10$dummy.hash.for.testing', 'Mike', 'Davis', '0712345680', NULL, 'customer', '', 1, '2026-01-09 10:37:11', '2026-01-14 08:24:11'),
+(12, 'mike.davis@email.com', '$2b$10$dummy.hash.for.testing', 'Mike', 'Davis', '0712345680', NULL, 'customer', '', 1, '2026-01-09 10:37:11', '2026-01-16 05:30:57'),
 (13, 'emma.wilson@email.com', '$2b$10$dummy.hash.for.testing', 'Emma', 'Wilson', '0712345681', NULL, 'customer', '', 1, '2026-01-09 10:37:11', '2026-01-13 09:16:30'),
 (14, 'david.brown@email.com', '$2b$10$dummy.hash.for.testing', 'David', 'Brown', '0712345682', NULL, 'worker', '', 1, '2026-01-09 10:37:11', '2026-01-09 10:37:11'),
 (15, 'lisa.garcia@email.com', '$2b$10$dummy.hash.for.testing', 'Lisa', 'Garcia', '0712345683', NULL, 'worker', '', 1, '2026-01-09 10:37:11', '2026-01-09 10:37:11'),
@@ -232,7 +262,10 @@ INSERT INTO `users` (`user_id`, `email`, `password_hash`, `first_name`, `last_na
 (35, 'alpha.beta@service.com', '$2b$10$SKq8aEo1EMAMHgFj2/gJaej/A43R9UwhFEdJv5bmZYGplLLaFr55G', 'Ella White', 'David Thomas', '5552223344', '627 Chestnut Drive', 'customer', '', 1, '2026-01-13 09:05:20', '2026-01-13 09:21:10'),
 (37, 'john.smith@email.com', '$2b$10$TYv0KGMhd3pHtMWtNVl/duOlv56V9NxWTmK2QCbnujSVie9EGTcrq', 'Elizabeth Allen', 'Robert Lopez', '5551112233', '486 Poplar Lane', 'worker', '', 1, '2026-01-13 09:24:12', '2026-01-13 09:24:12'),
 (38, 'test5@gmail.com', '$2b$10$4E/8MdOMPTwCNL5Q2/UZjOZhnya7IgJiHl8WimSxvA9S5tSaV5ZB.', 'testtest', 'testest', '0720815252', '120/G/I Mill Road', 'customer', '', 1, '2026-01-13 09:29:00', '2026-01-14 08:21:34'),
-(39, 'kevin@gmail.com', '$2b$10$./6agWa0kZd7bKncMAYFLef690A.RGWFWBqg8YMg4TY2HTBd8P4Qa', 'Kevin', 'paris', '0720815252', '120/G/I Mill Road', 'customer', '/uploads/profiles/USER-1768367793670.png', 1, '2026-01-13 11:38:06', '2026-01-14 05:16:33');
+(39, 'kevin@gmail.com', '$2b$10$./6agWa0kZd7bKncMAYFLef690A.RGWFWBqg8YMg4TY2HTBd8P4Qa', 'Kevin', 'paris', '0720815252', '120/G/I Mill Road', 'customer', '/uploads/profiles/USER-1768367793670.png', 1, '2026-01-13 11:38:06', '2026-01-14 05:16:33'),
+(40, 'sarah.j@email.com', '$2b$10$dummy.hash.for.testing', 'Sarah', 'Johnson', '0712345679', NULL, 'customer', NULL, 1, '2026-01-16 06:27:48', '2026-01-16 06:27:48'),
+(41, 'jennifer.white@email.com', '$2b$10$dummy.hash.for.testing', 'Jennifer', 'White', '0712345689', NULL, 'worker', NULL, 1, '2026-01-16 06:27:48', '2026-01-16 06:27:48'),
+(42, 'admin@jaan.com', '$2b$10$dummy.hash.for.testing', 'Admin', 'User', '0712345690', NULL, 'admin', NULL, 1, '2026-01-16 06:27:48', '2026-01-16 06:27:48');
 
 -- --------------------------------------------------------
 
@@ -267,7 +300,8 @@ INSERT INTO `worker_profiles` (`worker_id`, `user_id`, `service_id`, `experience
 (7, 18, 9, 3, 4.50, 25, 1, 'Experienced plumbing professional', NULL, '2026-01-09 10:37:11'),
 (8, 19, 10, 3, 4.50, 25, 1, 'Experienced electrical work professional', NULL, '2026-01-09 10:37:11'),
 (9, 20, 6, 3, 4.50, 25, 1, 'Experienced house cleaning professional', NULL, '2026-01-09 10:37:11'),
-(14, 37, 1, 0, 0.00, 0, 1, NULL, NULL, '2026-01-13 09:24:12');
+(14, 37, 1, 0, 0.00, 0, 1, NULL, NULL, '2026-01-13 09:24:12'),
+(15, 41, 7, 3, 4.50, 25, 1, 'Experienced office cleaning professional', NULL, '2026-01-16 06:27:48');
 
 --
 -- Indexes for dumped tables
@@ -358,13 +392,13 @@ ALTER TABLE `admin_settings`
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `booking_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `booking_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `booking_workers`
 --
 ALTER TABLE `booking_workers`
-  MODIFY `booking_worker_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `booking_worker_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `feedbacks`
@@ -376,7 +410,7 @@ ALTER TABLE `feedbacks`
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `notification_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `notification_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `payments`
@@ -388,19 +422,19 @@ ALTER TABLE `payments`
 -- AUTO_INCREMENT for table `services`
 --
 ALTER TABLE `services`
-  MODIFY `service_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `service_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
 
 --
 -- AUTO_INCREMENT for table `worker_profiles`
 --
 ALTER TABLE `worker_profiles`
-  MODIFY `worker_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `worker_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- Constraints for dumped tables

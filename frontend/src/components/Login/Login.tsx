@@ -7,37 +7,36 @@ import { notify } from "../utils/notify";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState(""); // Added password state
-  const [loading, setLoading] = useState(false); // Added loading state
+  const [password, setPassword] = useState(""); 
+  const [loading, setLoading] = useState(false); 
   const navigate = useNavigate();
   const location = useLocation();
 
 const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      const data = await loginUser({ email, password });
-      notify.success(`Welcome back, ${data.name}!`);
+  try {
+    const data = await loginUser({ email, password });
+    notify.success(`Welcome back!`);
 
-      // 1. Update Storage
-      window.dispatchEvent(new Event("storage"));
+    window.dispatchEvent(new Event("storage"));
 
-      // 2. Determine Destination
-      // Check if there is a 'from' path in the background state
-      const from = location.state?.from?.pathname || "/";
+    // 1. Get the 'from' path saved by ProtectedRoute
+    // 2. If it exists, combine path + query params (like ?service=Masonry)
+    const from = location.state?.from;
+    const destination = from ? `${from.pathname}${from.search}` : "/";
 
-      // 3. Logic: Admin always goes to dashboard, customers go to 'from'
-      const destination = data.role === "admin" ? "/admin" : from;
+    // 3. Admin override, else go to destination
+    const finalPath = data.role === "admin" ? "/admin" : destination;
 
-      // Use { replace: true } so the user can't go "back" to the login page
-      navigate(destination, { replace: true });
-    } catch (err: any) {
-      notify.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    navigate(finalPath, { replace: true });
+  } catch (err: any) {
+    notify.error("Login failed");
+  } finally {
+    setLoading(false);
+  }
+};
   
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
@@ -47,6 +46,9 @@ const handleLogin = async (e: React.FormEvent) => {
         className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-gray-100"
       >
         <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-50 rounded-full mb-4">
+            <div className="w-8 h-8 bg-[#00467f] rounded-lg rotate-12"></div>
+          </div>
           <h2 className="text-3xl font-extrabold text-[#00467f]">
             Welcome Back
           </h2>
@@ -65,7 +67,7 @@ const handleLogin = async (e: React.FormEvent) => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full mt-1 p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00467f] outline-none"
+              className="w-full mt-1 p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00467f] outline-none transition-all"
               placeholder="name@company.com"
             />
           </div>
@@ -77,27 +79,44 @@ const handleLogin = async (e: React.FormEvent) => {
             <input
               required
               type="password"
-              value={password} // Controlled component
-              onChange={(e) => setPassword(e.target.value)} // Set password state
-              className="w-full mt-1 p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00467f] outline-none"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full mt-1 p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00467f] outline-none transition-all"
               placeholder="••••••••"
             />
           </div>
 
           <button
             type="submit"
-            disabled={loading} // Disable while loading
-            className={`w-full bg-[#00467f] text-white font-bold py-3 rounded-lg hover:bg-[#003561] transition-all shadow-lg ${
+            disabled={loading}
+            className={`w-full bg-[#00467f] text-white font-bold py-3 rounded-lg hover:bg-[#003561] transition-all shadow-lg active:scale-[0.98] ${
               loading ? "opacity-70 cursor-not-allowed" : ""
             }`}
           >
-            {loading ? "Authenticating..." : "Log In"}
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Authenticating...
+              </span>
+            ) : "Log In"}
           </button>
         </form>
 
-        <p className="text-center mt-6 text-sm text-gray-600">
+        <div className="relative my-8">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-200"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-white text-gray-500">Secure Access</span>
+          </div>
+        </div>
+
+        <p className="text-center text-sm text-gray-600">
           Don't have an account?{" "}
-          <Link to="/sign-up" className="text-[#00467f] font-bold">
+          <Link to="/sign-up" className="text-[#00467f] font-bold hover:underline">
             Sign Up
           </Link>
         </p>

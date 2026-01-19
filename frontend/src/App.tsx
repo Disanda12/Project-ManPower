@@ -24,6 +24,7 @@ import ServiceManagement from './components/admin/serviceManagement/ServiceManag
 import AdminDashboard from './components/admin/AdminDashboard';
 import AdminSettings from './components/admin/AdminSettings';
 import ScrollToTop from './components/ScrollToTop';
+import ProtectedRoute from './components/utils/ProtectedRoute';
 
 function App() {
   return (
@@ -46,9 +47,14 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/about-us" element={<AboutUs />} />
             <Route path="/contact-us" element={<ContactUs />} />
-            <Route path="/booking" element={<HireWorkerForm />} />
+            <Route path="/booking" element={
+            <ProtectedRoute>
+              <HireWorkerForm />
+            </ProtectedRoute>
+          }/>
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/booking-history" element={<BookingHistory />} />
+            <Route path="/booking-history" element={
+              <BookingHistory />} />
             <Route path="/manage-bookings" element={<ManageBookings />} />
             <Route path="/industries" element={<IndustriesPage />} />
             <Route path="/sign-up" element={<SignUp />} />

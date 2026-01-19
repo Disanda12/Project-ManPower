@@ -84,22 +84,7 @@ const StatsSection = () => {
           <p className="text-blue-100 text-lg mb-8 max-w-2xl mx-auto">
             Join the community of homeowners and contractors who rely on our platform for professional labor solutions.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="bg-white text-[#00467f] px-10 py-4 rounded-md font-bold text-lg hover:bg-blue-50 transition-shadow shadow-xl"
-            >
-              Find a Professional
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="bg-transparent border-2 border-white text-white px-10 py-4 rounded-md font-bold text-lg hover:bg-white/10 transition-colors"
-            >
-              Our Vetting Process
-            </motion.button>
-          </div>
+
         </motion.div>
       </div>
     </section>
