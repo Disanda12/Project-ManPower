@@ -11,7 +11,8 @@ import {
   Briefcase,
   Users,
   Search,
-  Bell
+  Bell,
+  MessageSquare
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -186,6 +187,7 @@ const NavigationBar = () => {
                             <AccountLink icon={<Users size={16}/>} label="User Management" to="/admin/users" />
                             <AccountLink icon={<User size={16}/>} label="Worker Management" to="/admin/workers" />
                             <AccountLink icon={<Briefcase size={16}/>} label="Service Management" to="/admin/services" />
+                            <AccountLink icon={<MessageSquare size={16}/>} label="Manage Feedbacks" to="/admin/feedbacks" />
                           </div>
                         )}
                         <div className="h-px bg-gray-100 my-2" />
