@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Star, MessageSquare, User, Calendar, 
-  Check, X, Eye, EyeOff, AlertCircle, ArrowLeft, Loader2
+  Check, X, Eye, EyeOff, AlertCircle, ArrowLeft, Loader2,
+  ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { getAllFeedbacksForAdmin, updateFeedbackStatus, AdminFeedback } from '../../../api/feedbackService';
 
@@ -12,6 +13,8 @@ const AdminFeedbackManager = () => {
   const [feedbacks, setFeedbacks] = useState<AdminFeedback[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   useEffect(() => {
     fetchFeedbacks();
@@ -22,6 +25,7 @@ const AdminFeedbackManager = () => {
       setLoading(true);
       const data = await getAllFeedbacksForAdmin();
       setFeedbacks(data);
+      setCurrentPage(1); // Reset to first page when new data loads
       setError(null);
     } catch (err: any) {
       setError(err.message || 'Failed to load feedbacks');
@@ -39,6 +43,28 @@ const AdminFeedbackManager = () => {
       ));
     } catch (err: any) {
       setError(err.message || 'Failed to update feedback status');
+    }
+  };
+
+  // Pagination logic
+  const totalPages = Math.ceil(feedbacks.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentFeedbacks = feedbacks.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
     }
   };
 
@@ -85,7 +111,7 @@ const AdminFeedbackManager = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <AnimatePresence>
-              {feedbacks.map((item) => (
+              {currentFeedbacks.map((item) => (
                 <motion.div
                   key={item.id}
                   layout
@@ -140,6 +166,53 @@ const AdminFeedbackManager = () => {
                 </motion.div>
               ))}
             </AnimatePresence>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {!loading && feedbacks.length > 0 && (
+          <div className="flex flex-col items-center mt-12 space-y-4">
+            <div className="text-sm text-gray-500">
+              Showing {startIndex + 1}-{Math.min(endIndex, feedbacks.length)} of {feedbacks.length} feedbacks
+            </div>
+            
+            {totalPages > 1 && (
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={handlePrevPage}
+                  disabled={currentPage === 1}
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  <ChevronLeft size={16} />
+                  Previous
+                </button>
+
+                <div className="flex items-center space-x-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => handlePageChange(page)}
+                      className={`px-3 py-2 rounded-lg font-medium transition-all ${
+                        currentPage === page
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  Next
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

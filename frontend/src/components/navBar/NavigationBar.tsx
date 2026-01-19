@@ -257,6 +257,26 @@ const NavigationBar = () => {
                   <div className="space-y-4">
                     <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-2">Personal Account</p>
                     <div className="space-y-2">
+                        {/* Notifications Bell */}
+                        <div className="relative">
+                          <button
+                            onClick={() => setNotificationsOpen(!notificationsOpen)}
+                            className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl font-bold text-gray-700 border border-gray-100 w-full"
+                          >
+                            <Bell size={20} className="text-gray-400" />
+                            <span>Notifications</span>
+                            {unreadNotifications > 0 && (
+                              <span className="bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center ml-auto">
+                                {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                              </span>
+                            )}
+                          </button>
+                          <NotificationDropdown
+                            isOpen={notificationsOpen}
+                            onClose={() => setNotificationsOpen(false)}
+                            onUnreadCountChange={setUnreadNotifications}
+                          />
+                        </div>
                         {userRole !== 'admin' && (
                             <MobileLink icon={<User />} label="My Profile" to="/profile" onClick={() => setMobileMenuOpen(false)} />
                         )}
@@ -277,6 +297,7 @@ const NavigationBar = () => {
                        <MobileLink icon={<Users />} label="User Management" to="/admin/users" onClick={() => setMobileMenuOpen(false)} />
                        <MobileLink icon={<User />} label="Worker Management" to="/admin/workers" onClick={() => setMobileMenuOpen(false)} />
                        <MobileLink icon={<Briefcase />} label="Service Management" to="/admin/services" onClick={() => setMobileMenuOpen(false)} />
+                       <MobileLink icon={<MessageSquare />} label="Manage Feedbacks" to="/admin/feedbacks" onClick={() => setMobileMenuOpen(false)} />
                     </div>
                   </div>
                 )}
