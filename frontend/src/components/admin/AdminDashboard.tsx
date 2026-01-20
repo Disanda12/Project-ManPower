@@ -8,8 +8,8 @@ import {
   Calendar,
   MessageSquare,
   Clock,
-  CheckCircle,
   Settings,
+  CheckCircle,
   TrendingUp,
   Activity,
   BarChart3
@@ -555,13 +555,6 @@ const AdminDashboard: React.FC = () => {
                 path: '/admin/feedbacks',
                 color: 'white',
                 description: 'Review and respond to feedback'
-              },
-              {
-                icon: Settings,
-                label: 'System Settings',
-                path: '/admin/settings',
-                color: 'white',
-                description: 'Configure platform settings'
               }
             ].map((action, index) => (
               <motion.button
