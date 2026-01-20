@@ -42,7 +42,7 @@ const ContactUs = () => {
   return (
     <div className="bg-white min-h-screen">
       {/* Header Section */}
-      <section className="bg-[#00467f] py-20 text-center">
+      <section className="bg-[#00467f] py-20 text-center pt-32 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4">
           <motion.h1 
             initial={{ opacity: 0, y: -20 }}

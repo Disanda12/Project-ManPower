@@ -68,20 +68,31 @@ const OrderHistory = () => {
     }
   };
 
-  // --- Logic ---
+  // --- Updated Logic ---
+  
+  // 1. Unified Status Styling
   const getStatusStyles = (status: string) => {
-    const s = status.toLowerCase();
+    const s = status?.toLowerCase().trim();
     if (s === 'pending') return "bg-amber-50 text-amber-600 border-amber-100";
-    if (s === 'confirmed') return "bg-blue-50 text-blue-600 border-blue-100";
+    if (s === 'confirmed' || s === 'assigned') return "bg-blue-50 text-blue-600 border-blue-100";
     if (s === 'completed') return "bg-emerald-50 text-emerald-600 border-emerald-100";
+    if (s === 'in_progress') return "bg-purple-50 text-purple-600 border-purple-100";
     return "bg-slate-50 text-slate-500 border-slate-100";
   };
 
+  // 2. Tab Filtering Logic
   const filteredOrders = orders.filter((order) => {
     const dbStatus = order.booking_status?.toLowerCase().trim() || "";
-    if (activeTab === "Active") return ["pending", "assigned", "in_progress"].includes(dbStatus);
-    if (activeTab === "Confirmed") return dbStatus === "confirmed";
-    return ["completed", "cancelled"].includes(dbStatus);
+    
+    if (activeTab === "Active") {
+      return dbStatus === "pending";
+    }
+    if (activeTab === "Confirmed") {
+      // "Assigned" orders now appear here
+      return ["confirmed", "assigned"].includes(dbStatus);
+    }
+    // Completed tab shows historical data
+    return ["completed", "cancelled", "in_progress"].includes(dbStatus);
   });
 
   if (loading) return (
@@ -138,7 +149,8 @@ const OrderHistory = () => {
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Confirmed Units</p>
                   <div className="flex items-baseline gap-2">
                     <h2 className="text-4xl font-black text-blue-600">
-                      {orders.filter(o => o.booking_status?.toLowerCase() === 'confirmed').length}
+                      {/* Count both Confirmed and Assigned for the sidebar */}
+                      {orders.filter(o => ["confirmed", "assigned"].includes(o.booking_status?.toLowerCase())).length}
                     </h2>
                     <span className="text-[10px] font-bold text-blue-400 uppercase tracking-tighter">Verified</span>
                   </div>
@@ -187,7 +199,9 @@ const OrderHistory = () => {
                       <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
                         <div className="flex gap-4">
                           <div className={`h-14 w-14 rounded-2xl flex items-center justify-center border-2 ${getStatusStyles(order.booking_status)}`}>
-                            {order.booking_status === 'confirmed' ? <ShieldCheck size={28} /> : <Clock size={28} />}
+                            {["confirmed", "assigned"].includes(order.booking_status?.toLowerCase()) ? 
+                               <ShieldCheck size={28} /> : <Clock size={28} />
+                            }
                           </div>
                           <div>
                             <h3 className="text-xl font-black text-slate-900 tracking-tight uppercase">{order.service_name}</h3>
@@ -231,38 +245,43 @@ const OrderHistory = () => {
                       </div>
 
                       {/* Action Bar */}
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">Authorized Transaction</span>
+{/* Action Bar */}
+<div className="flex items-center justify-between">
+  <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">Authorized Transaction</span>
 
-                        <div className="flex items-center gap-2">
-                          {(order.booking_status === "pending" || order.booking_status === "assigned") && (
-                            <button 
-                              onClick={() => setCancelId(order.booking_id)}
-                              className="h-10 px-4 text-[11px] font-black text-red-500 hover:bg-red-50 rounded-lg transition-all uppercase tracking-widest"
-                            >
-                              Cancel
-                            </button>
-                          )}
-                          
-                          {activeTab === "Completed" ? (
-                            <button
-                              onClick={() => setSelectedBookingId(order.booking_id)}
-                              className="h-10 px-6 bg-amber-400 hover:bg-amber-500 text-amber-950 text-[11px] font-black rounded-lg transition-all uppercase shadow-md shadow-amber-100"
-                            >
-                              Rate Service
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => {
-                                setUpdateTarget(order);
-                              }}
-                              className="h-10 px-6 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-black rounded-lg transition-all flex items-center gap-2 shadow-lg shadow-blue-100 uppercase tracking-widest"
-                            >
-                              <Edit3 size={13} /> Update
-                            </button>
-                          )}
-                        </div>
-                      </div>
+  <div className="flex items-center gap-2">
+    {/* Cancel remains available for Pending, Assigned, and Confirmed */}
+    {["pending", "assigned", "confirmed"].includes(order.booking_status?.toLowerCase()) && (
+      <button 
+        onClick={() => setCancelId(order.booking_id)}
+        className="h-10 px-4 text-[11px] font-black text-red-500 hover:bg-red-50 rounded-lg transition-all uppercase tracking-widest"
+      >
+        Cancel
+      </button>
+    )}
+    
+    {activeTab === "Completed" ? (
+      order.booking_status?.toLowerCase() === "completed" && (
+        <button
+          onClick={() => setSelectedBookingId(order.booking_id)}
+          className="h-10 px-6 bg-amber-400 hover:bg-amber-500 text-amber-950 text-[11px] font-black rounded-lg transition-all uppercase shadow-md shadow-amber-100"
+        >
+          Rate Service
+        </button>
+      )
+    ) : (
+      /* ONLY show Update button if the status is Pending */
+      order.booking_status?.toLowerCase() === "pending" && (
+        <button
+          onClick={() => setUpdateTarget(order)}
+          className="h-10 px-6 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-black rounded-lg transition-all flex items-center gap-2 shadow-lg shadow-blue-100 uppercase tracking-widest"
+        >
+          <Edit3 size={13} /> Update
+        </button>
+      )
+    )}
+  </div>
+</div>
                     </div>
                   </motion.div>
                 ))
@@ -278,8 +297,6 @@ const OrderHistory = () => {
       </div>
 
       {/* --- MODAL OVERLAYS --- */}
-
-      {/* Feedback Modal */}
       <AnimatePresence>
         {selectedBookingId && (
           <FeedbackForm 
@@ -289,14 +306,12 @@ const OrderHistory = () => {
         )}
       </AnimatePresence>
 
-      {/* Update Modal */}
       <UpdateBookingModal 
         isOpen={!!updateTarget} 
         onClose={() => setUpdateTarget(null)} 
         bookingData={updateTarget}
       />
 
-      {/* Cancellation Modal */}
       <CancelModal 
         isOpen={!!cancelId} 
         onClose={() => setCancelId(null)} 
@@ -304,7 +319,6 @@ const OrderHistory = () => {
         isProcessing={isProcessing}
         bookingId={cancelId}
       />
-
     </div>
   );
 };
