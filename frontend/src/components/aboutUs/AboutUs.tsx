@@ -31,7 +31,7 @@ const AboutUs = () => {
   return (
     <div className="bg-white">
       {/* 1. Page Header / Hero Area */}
-      <section className="relative bg-[#00467f] py-24 overflow-hidden">
+      <section className="relative bg-[#00467f] py-24 overflow-hidden pt-64">
         <div className="absolute inset-0 opacity-10 bg-[url('https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&q=80&w=1920')] bg-cover bg-center"></div>
         <div className="relative max-w-7xl mx-auto px-4 text-center">
           <motion.h1 
