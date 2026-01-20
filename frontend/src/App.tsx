@@ -58,9 +58,9 @@ function App() {
             <Route path="/manage-bookings" element={<ManageBookings />} />
             <Route path="/industries" element={<IndustriesPage />} />
             <Route path="/sign-up" element={<SignUp />} />
-            <Route path="/customer-bookings" element={<CustomerBookings />} />
-            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/customer-bookings" element={<ProtectedRoute><CustomerBookings /></ProtectedRoute>} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/bookings" element={<AdminBookingManager />} />
             <Route path="/admin/feedbacks" element={<AdminFeedbackManager />} />
             <Route path="/admin/users" element={<UserManagement />} />
