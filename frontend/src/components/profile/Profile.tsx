@@ -34,26 +34,33 @@ const ProfilePage = () => {
   const [preview, setPreview] = useState<string>("");
   const [imageFile, setImageFile] = useState<File | null>(null);
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      const userId = localStorage.getItem("user_id");
-      if (!userId) return;
-      try {
-        const result = await getUserProfile(Number(userId));
-        const data = result.data;
-        setProfile(data);
-        const initialPreview = data.profile_image
-                    ? `http://localhost:5002${data.profile_image}` 
-          : `https://ui-avatars.com/api/?name=${data.first_name}+${data.last_name}&background=00467f&color=fff&size=256`;
-        setPreview(initialPreview);
-      } catch (err) {
-        notify.error("Failed to load profile details");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUserData();
-  }, []);
+useEffect(() => {
+  const fetchUserData = async () => {
+    const userId = localStorage.getItem("user_id");
+    if (!userId) return;
+    try {
+      const result = await getUserProfile(Number(userId));
+      const data = result.data;
+      setProfile(data);
+
+      // --- THE FIX ---
+      // If data.profile_image exists (e.g., "/uploads/profiles/img.jpg")
+      // We combine it with the API_BASE_URL (which is / in production)
+      const initialPreview = data.profile_image
+        ? `${API_BASE_URL}${data.profile_image}`.replace('//', '/') 
+        : `https://ui-avatars.com/api/?name=${data.first_name}+${data.last_name}&background=00467f&color=fff&size=256`;
+      
+      setPreview(initialPreview);
+      // ----------------
+      
+    } catch (err) {
+      notify.error("Failed to load profile details");
+    } finally {
+      setLoading(false);
+    }
+  };
+  fetchUserData();
+}, [API_BASE_URL]); // Add dependency
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
