@@ -64,7 +64,7 @@ router.get('/approved-feedbacks', async (req, res) => {
         customer_name: `${row.first_name} ${row.last_name}`,
         // Now prepend the path ONLY once
         profile_picture: imageFileName 
-            ? `http://localhost:5000/uploads/profiles/${imageFileName}` 
+            ? `http://localhost:5002/uploads/profiles/${imageFileName}` 
             : `https://ui-avatars.com/api/?name=${row.first_name}+${row.last_name}`
     };
 });

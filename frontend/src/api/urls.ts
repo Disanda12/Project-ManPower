@@ -1,5 +1,5 @@
 // src/api/urls.ts
-export const BASE_URL: string = "http://localhost:5000/api";
+export const BASE_URL: string = "http://localhost:5002/api";
 
 export const AUTH_ENDPOINTS = {
     SIGNUP: `${BASE_URL}/auth/signup`,

@@ -4,7 +4,7 @@ A full-stack manpower booking application with React frontend and Node.js/Expres
 
 ## 🚀 Deployment
 
-This application is configured to run both frontend and backend on the same port (5000) for production deployment.
+This application is configured to run both frontend and backend on the same port (5002) for production deployment.
 
 ### Development
 
@@ -23,7 +23,7 @@ npm run prod
 
 This will:
 1. Build the React frontend to `backend/public/`
-2. Start the Express server on port 5000
+2. Start the Express server on port 5002
 3. Serve both frontend and API from the same port
 
 ### Manual Production Steps

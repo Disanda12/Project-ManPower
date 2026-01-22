@@ -43,7 +43,7 @@ const ProfilePage = () => {
         const data = result.data;
         setProfile(data);
         const initialPreview = data.profile_image
-                    ? `http://localhost:5000${data.profile_image}` 
+                    ? `http://localhost:5002${data.profile_image}` 
           : `https://ui-avatars.com/api/?name=${data.first_name}+${data.last_name}&background=00467f&color=fff&size=256`;
         setPreview(initialPreview);
       } catch (err) {
