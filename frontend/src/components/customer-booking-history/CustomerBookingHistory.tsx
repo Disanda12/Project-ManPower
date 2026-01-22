@@ -12,6 +12,8 @@ import {
   AlignLeft,
   Activity,
   History,
+  X, // Added X icon for cancelled orders
+  AlertCircle
 } from "lucide-react";
 
 // API Services
@@ -28,7 +30,7 @@ const OrderHistory = () => {
   const [activeTab, setActiveTab] = useState<"Active" | "Confirmed" | "Completed">("Active");
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Modal Management States
   const [selectedBookingId, setSelectedBookingId] = useState<number | null>(null);
   const [cancelId, setCancelId] = useState<number | null>(null);
@@ -38,7 +40,10 @@ const OrderHistory = () => {
   // --- Actions ---
   const fetchOrders = async () => {
     const userId = localStorage.getItem("user_id");
-    if (!userId) { setLoading(false); return; }
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
     try {
       const response = await getUserBookings(Number(userId));
       if (response?.success) setOrders(response.data);
@@ -49,7 +54,9 @@ const OrderHistory = () => {
     }
   };
 
-  useEffect(() => { fetchOrders(); }, []);
+  useEffect(() => {
+    fetchOrders();
+  }, []);
 
   const handleCancelConfirm = async () => {
     if (!cancelId) return;
@@ -69,49 +76,47 @@ const OrderHistory = () => {
   };
 
   // --- Updated Logic ---
-  
+
   // 1. Unified Status Styling
   const getStatusStyles = (status: string) => {
     const s = status?.toLowerCase().trim();
-    if (s === 'pending') return "bg-amber-50 text-amber-600 border-amber-100";
-    if (s === 'confirmed' || s === 'assigned') return "bg-blue-50 text-blue-600 border-blue-100";
-    if (s === 'completed') return "bg-emerald-50 text-emerald-600 border-emerald-100";
-    if (s === 'in_progress') return "bg-purple-50 text-purple-600 border-purple-100";
+    if (s === "pending") return "bg-amber-50 text-amber-600 border-amber-100";
+    if (s === "confirmed" || s === "assigned") return "bg-blue-50 text-blue-600 border-blue-100";
+    if (s === "completed") return "bg-emerald-50 text-emerald-600 border-emerald-100";
+    if (s === "in_progress") return "bg-purple-50 text-purple-600 border-purple-100";
+    if (s === "cancelled") return "bg-red-50 text-red-600 border-red-100"; // Red for Cancelled
     return "bg-slate-50 text-slate-500 border-slate-100";
   };
 
   // 2. Tab Filtering Logic
   const filteredOrders = orders.filter((order) => {
     const dbStatus = order.booking_status?.toLowerCase().trim() || "";
-    
-    if (activeTab === "Active") {
-      return dbStatus === "pending";
-    }
-    if (activeTab === "Confirmed") {
-      // "Assigned" orders now appear here
-      return ["confirmed", "assigned"].includes(dbStatus);
-    }
-    // Completed tab shows historical data
+    if (activeTab === "Active") return dbStatus === "pending";
+    if (activeTab === "Confirmed") return ["confirmed", "assigned"].includes(dbStatus);
     return ["completed", "cancelled", "in_progress"].includes(dbStatus);
   });
 
-  if (loading) return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white">
-      <Loader2 className="animate-spin text-blue-600 mb-4" size={40} />
-      <span className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Accessing Ledger...</span>
-    </div>
-  );
+  if (loading)
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+        <Loader2 className="animate-spin text-blue-600 mb-4" size={40} />
+        <span className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">
+          Accessing Ledger...
+        </span>
+      </div>
+    );
 
   return (
     <div className="min-h-screen bg-[#f8fafc] pb-20 pt-28 px-4 font-sans">
       <div className="max-w-6xl mx-auto">
-        
         {/* HEADER */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
           <div className="flex items-center gap-4">
             <div className="h-12 w-1.5 bg-blue-600 rounded-full hidden md:block" />
             <div>
-              <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Service Ledger</h1>
+              <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase">
+                Service Ledger
+              </h1>
               <p className="text-slate-500 text-sm font-medium">Real-time deployment tracking</p>
             </div>
           </div>
@@ -135,7 +140,6 @@ const OrderHistory = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          
           {/* SIDEBAR SNAPSHOT */}
           <div className="lg:col-span-1 space-y-4">
             <div className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm">
@@ -143,14 +147,13 @@ const OrderHistory = () => {
                 <Activity size={18} className="text-blue-600" />
                 <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest">Snapshot</h4>
               </div>
-              
+
               <div className="space-y-6">
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Confirmed Units</p>
                   <div className="flex items-baseline gap-2">
                     <h2 className="text-4xl font-black text-blue-600">
-                      {/* Count both Confirmed and Assigned for the sidebar */}
-                      {orders.filter(o => ["confirmed", "assigned"].includes(o.booking_status?.toLowerCase())).length}
+                      {orders.filter((o) => ["confirmed", "assigned"].includes(o.booking_status?.toLowerCase())).length}
                     </h2>
                     <span className="text-[10px] font-bold text-blue-400 uppercase tracking-tighter">Verified</span>
                   </div>
@@ -160,12 +163,14 @@ const OrderHistory = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pending Review</span>
                     <span className="text-xs font-black text-amber-600">
-                      {orders.filter(o => o.booking_status?.toLowerCase() === 'pending').length}
+                      {orders.filter((o) => o.booking_status?.toLowerCase() === "pending").length}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Registry</span>
-                    <span className="text-xs font-black text-slate-900">{orders.length}</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Cancelled</span>
+                    <span className="text-xs font-black text-red-500">
+                      {orders.filter((o) => o.booking_status?.toLowerCase() === "cancelled").length}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -185,106 +190,127 @@ const OrderHistory = () => {
           <div className="lg:col-span-3 space-y-4">
             <AnimatePresence mode="popLayout">
               {filteredOrders.length > 0 ? (
-                filteredOrders.map((order) => (
-                  <motion.div
-                    key={order.booking_id}
-                    layout
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.98 }}
-                    className="bg-white border border-slate-200 rounded-[2.5rem] hover:border-blue-200 hover:shadow-xl hover:shadow-blue-900/5 transition-all duration-300"
-                  >
-                    <div className="p-6 md:p-8">
-                      {/* Card Header */}
-                      <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
-                        <div className="flex gap-4">
-                          <div className={`h-14 w-14 rounded-2xl flex items-center justify-center border-2 ${getStatusStyles(order.booking_status)}`}>
-                            {["confirmed", "assigned"].includes(order.booking_status?.toLowerCase()) ? 
-                               <ShieldCheck size={28} /> : <Clock size={28} />
-                            }
-                          </div>
-                          <div>
-                            <h3 className="text-xl font-black text-slate-900 tracking-tight uppercase">{order.service_name}</h3>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="text-[10px] font-mono text-slate-400">#BK-{order.booking_id}</span>
-                              <div className="h-1 w-1 bg-slate-200 rounded-full" />
-                              <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded border ${getStatusStyles(order.booking_status)}`}>
-                                {order.booking_status}
-                              </span>
+                filteredOrders.map((order) => {
+                  const isCancelled = order.booking_status?.toLowerCase() === "cancelled";
+                  
+                  return (
+                    <motion.div
+                      key={order.booking_id}
+                      layout
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.98 }}
+                      className={`relative overflow-hidden bg-white border border-slate-200 rounded-[2.5rem] hover:shadow-xl transition-all duration-300 ${isCancelled ? 'opacity-75 grayscale-[0.5]' : 'hover:border-blue-200 hover:shadow-blue-900/5'}`}
+                    >
+                      {/* Cancelled Watermark Overlay */}
+                      {isCancelled && (
+                        <div className="absolute top-6 right-10 rotate-12 border-4 border-red-500/20 px-4 py-1 rounded text-red-500/20 font-black text-3xl pointer-events-none select-none">
+                          VOID
+                        </div>
+                      )}
+
+                      <div className="p-6 md:p-8">
+                        <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
+                          <div className="flex gap-4">
+                            <div className={`h-14 w-14 rounded-2xl flex items-center justify-center border-2 ${getStatusStyles(order.booking_status)}`}>
+                              {isCancelled ? (
+                                <X size={28} />
+                              ) : ["confirmed", "assigned"].includes(order.booking_status?.toLowerCase()) ? (
+                                <ShieldCheck size={28} />
+                              ) : (
+                                <Clock size={28} />
+                              )}
+                            </div>
+                            <div>
+                              <h3 className={`text-xl font-black tracking-tight uppercase ${isCancelled ? 'text-slate-400 line-through' : 'text-slate-900'}`}>
+                                {order.service_name}
+                              </h3>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="text-[10px] font-mono text-slate-400">#BK-{order.booking_id}</span>
+                                <div className="h-1 w-1 bg-slate-200 rounded-full" />
+                                <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded border ${getStatusStyles(order.booking_status)}`}>
+                                  {order.booking_status}
+                                </span>
+                              </div>
                             </div>
                           </div>
+                          <div className={`px-4 py-2 rounded-xl border ${isCancelled ? 'bg-slate-100 border-slate-200' : 'bg-slate-50 border-slate-100'}`}>
+                            <span className="block text-[9px] font-black text-slate-400 uppercase tracking-tighter">Settlement</span>
+                            <span className={`text-lg font-black ${isCancelled ? 'text-slate-500' : 'text-blue-600'}`}>
+                              LKR {Number(order.total_amount_lkr).toLocaleString()}
+                            </span>
+                          </div>
                         </div>
-                        <div className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-100">
-                          <span className="block text-[9px] font-black text-slate-400 uppercase tracking-tighter">Settlement</span>
-                          <span className="text-lg font-black text-blue-600">LKR {Number(order.total_amount_lkr).toLocaleString()}</span>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                          <div className="space-y-1">
+                            <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest"><Calendar size={12} /> Schedule</label>
+                            <p className={`text-xs font-bold ${isCancelled ? 'text-slate-400' : 'text-slate-700'}`}>{new Date(order.start_date).toLocaleDateString()}</p>
+                          </div>
+                          <div className="space-y-1">
+                            <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest"><User size={12} /> Unit Strength</label>
+                            <p className={`text-xs font-bold ${isCancelled ? 'text-slate-400' : 'text-slate-700'}`}>{order.number_of_workers} Personnel</p>
+                          </div>
+                          <div className="space-y-1">
+                            <label className="flex items-center gap-2 text-[10px] font-black text-blue-600 uppercase tracking-widest"><MapPin size={12} /> Deployment</label>
+                            <p className={`text-xs font-bold line-clamp-1 italic ${isCancelled ? 'text-slate-400' : 'text-slate-700'}`}>{order.location || "On-site"}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-4 p-4 bg-slate-50/50 rounded-2xl border border-slate-100 mb-8">
+                          <AlignLeft size={16} className="text-slate-300 shrink-0" />
+                          <p className={`text-[11px] leading-relaxed font-bold tracking-tight uppercase ${isCancelled ? 'text-slate-400 italic' : 'text-slate-500'}`}>
+                            {isCancelled ? "This transaction was terminated and archived." : order.work_description}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">
+                            {isCancelled ? "Voided Record" : "Authorized Transaction"}
+                          </span>
+
+                          <div className="flex items-center gap-2">
+                            {["pending", "assigned", "confirmed"].includes(order.booking_status?.toLowerCase()) && (
+                              <button
+                                onClick={() => setCancelId(order.booking_id)}
+                                className="h-10 px-4 text-[11px] font-black text-red-500 hover:bg-red-50 rounded-lg transition-all uppercase tracking-widest"
+                              >
+                                Cancel
+                              </button>
+                            )}
+
+                            {activeTab === "Completed" ? (
+                               order.booking_status?.toLowerCase() === "completed" && (
+                                <button
+                                  onClick={() => setSelectedBookingId(order.booking_id)}
+                                  className="h-10 px-6 bg-amber-400 hover:bg-amber-500 text-amber-950 text-[11px] font-black rounded-lg transition-all uppercase shadow-md shadow-amber-100"
+                                >
+                                  Rate Service
+                                </button>
+                              )
+                            ) : (
+                               order.booking_status?.toLowerCase() === "pending" && (
+                                <button
+                                  onClick={() => setUpdateTarget(order)}
+                                  className="h-10 px-6 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-black rounded-lg transition-all flex items-center gap-2 shadow-lg shadow-blue-100 uppercase tracking-widest"
+                                >
+                                  <Edit3 size={13} /> Update
+                                </button>
+                              )
+                            )}
+                            
+                            {isCancelled && (
+                               <div className="flex items-center gap-2 text-red-400 px-3">
+                                 <AlertCircle size={14} />
+                                 <span className="text-[9px] font-black uppercase tracking-tighter">Cancelled by User</span>
+                               </div>
+                            )}
+                          </div>
                         </div>
                       </div>
-
-                      {/* Info Bar */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                        <div className="space-y-1">
-                          <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest"><Calendar size={12}/> Schedule</label>
-                          <p className="text-xs font-bold text-slate-700">{new Date(order.start_date).toLocaleDateString()}</p>
-                        </div>
-                        <div className="space-y-1">
-                          <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest"><User size={12}/> Unit Strength</label>
-                          <p className="text-xs font-bold text-slate-700">{order.number_of_workers} Personnel</p>
-                        </div>
-                        <div className="space-y-1">
-                          <label className="flex items-center gap-2 text-[10px] font-black text-blue-600 uppercase tracking-widest"><MapPin size={12}/> Deployment</label>
-                          <p className="text-xs font-bold text-slate-700 line-clamp-1 italic">{order.location || "On-site"}</p>
-                        </div>
-                      </div>
-
-                      {/* Description Area */}
-                      <div className="flex gap-4 p-4 bg-slate-50/50 rounded-2xl border border-slate-100 mb-8">
-                         <AlignLeft size={16} className="text-slate-300 shrink-0" />
-                         <p className="text-[11px] text-slate-500 leading-relaxed font-bold tracking-tight uppercase">
-                            {order.work_description}
-                         </p>
-                      </div>
-
-                      {/* Action Bar */}
-{/* Action Bar */}
-<div className="flex items-center justify-between">
-  <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">Authorized Transaction</span>
-
-  <div className="flex items-center gap-2">
-    {/* Cancel remains available for Pending, Assigned, and Confirmed */}
-    {["pending", "assigned", "confirmed"].includes(order.booking_status?.toLowerCase()) && (
-      <button 
-        onClick={() => setCancelId(order.booking_id)}
-        className="h-10 px-4 text-[11px] font-black text-red-500 hover:bg-red-50 rounded-lg transition-all uppercase tracking-widest"
-      >
-        Cancel
-      </button>
-    )}
-    
-    {activeTab === "Completed" ? (
-      order.booking_status?.toLowerCase() === "completed" && (
-        <button
-          onClick={() => setSelectedBookingId(order.booking_id)}
-          className="h-10 px-6 bg-amber-400 hover:bg-amber-500 text-amber-950 text-[11px] font-black rounded-lg transition-all uppercase shadow-md shadow-amber-100"
-        >
-          Rate Service
-        </button>
-      )
-    ) : (
-      /* ONLY show Update button if the status is Pending */
-      order.booking_status?.toLowerCase() === "pending" && (
-        <button
-          onClick={() => setUpdateTarget(order)}
-          className="h-10 px-6 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-black rounded-lg transition-all flex items-center gap-2 shadow-lg shadow-blue-100 uppercase tracking-widest"
-        >
-          <Edit3 size={13} /> Update
-        </button>
-      )
-    )}
-  </div>
-</div>
-                    </div>
-                  </motion.div>
-                ))
+                    </motion.div>
+                  );
+                })
               ) : (
                 <div className="flex flex-col items-center justify-center py-40 bg-white rounded-[3rem] border border-slate-200">
                   <Package className="text-slate-100 mb-4" size={60} />
@@ -296,25 +322,17 @@ const OrderHistory = () => {
         </div>
       </div>
 
-      {/* --- MODAL OVERLAYS --- */}
       <AnimatePresence>
         {selectedBookingId && (
-          <FeedbackForm 
-            bookingId={selectedBookingId} 
-            onClose={() => setSelectedBookingId(null)} 
-          />
+          <FeedbackForm bookingId={selectedBookingId} onClose={() => setSelectedBookingId(null)} />
         )}
       </AnimatePresence>
 
-      <UpdateBookingModal 
-        isOpen={!!updateTarget} 
-        onClose={() => setUpdateTarget(null)} 
-        bookingData={updateTarget}
-      />
+      <UpdateBookingModal isOpen={!!updateTarget} onClose={() => setUpdateTarget(null)} bookingData={updateTarget} />
 
-      <CancelModal 
-        isOpen={!!cancelId} 
-        onClose={() => setCancelId(null)} 
+      <CancelModal
+        isOpen={!!cancelId}
+        onClose={() => setCancelId(null)}
         onConfirm={handleCancelConfirm}
         isProcessing={isProcessing}
         bookingId={cancelId}

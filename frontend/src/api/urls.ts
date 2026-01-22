@@ -1,11 +1,17 @@
 // src/api/urls.ts
-export const BASE_URL: string = "/api";
+
+// Detect if the app is running on your computer or on the live server
+const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+
+// PRODUCTION: Uses relative path "/api" (https://manpower.jaan.lk/api/...)
+// DEVELOPMENT: Points specifically to your local backend port
+export const BASE_URL: string = isProduction ? "/api" : "http://localhost:5002/api";
 
 export const AUTH_ENDPOINTS = {
     SIGNUP: `${BASE_URL}/auth/signup`,
     LOGIN: `${BASE_URL}/auth/login`,
     LOGOUT: `${BASE_URL}/auth/logout`,
-} as const; 
+} as const;
 
 export const USER_ENDPOINTS = {
     GET_USERS: `${BASE_URL}/users`,
@@ -17,6 +23,7 @@ export const USER_ENDPOINTS = {
     UPDATE_PROFILE: `${BASE_URL}/profile/update`,
     GET_PROFILE: (userId: number) => `${BASE_URL}/profile/${userId}`,
 } as const;
+
 export const FEEDBACK_ENDPOINTS = {
     SUBMIT: `${BASE_URL}/feedback/submit`,
     GET_BY_CUSTOMER: (id: number) => `${BASE_URL}/feedback/user/${id}`,
@@ -24,6 +31,7 @@ export const FEEDBACK_ENDPOINTS = {
     GET_ALL_FOR_ADMIN: `${BASE_URL}/feedback/admin/all`,
     UPDATE_STATUS: (id: number) => `${BASE_URL}/feedback/${id}/status`,
 } as const;
+
 export const SERVICE_ENDPOINTS = {
     GET_ALL: `${BASE_URL}/services/get-Services`,
     GET_BY_ID: (id: number) => `${BASE_URL}/services/${id}`,
@@ -35,4 +43,6 @@ export const BOOKING_ENDPOINTS = {
     CANCEL_BOOKING: (bookingId: number) => `${BASE_URL}/customer-booking/cancel/${bookingId}`,
 } as const;
 
-
+export const STATUS_ENDPOINTS = {
+    DB_STATUS: `${BASE_URL}/status/db-status`,
+} as const;
