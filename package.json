@@ -1,7 +1,10 @@
 {
   "private": true,
   "scripts": {
-    "start": "concurrently --kill-others-on-fail false \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\""
+    "dev": "concurrently --kill-others-on-fail false \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "build": "npm run build --prefix frontend",
+    "start": "npm run prod --prefix backend",
+    "prod": "npm run build && npm run start"
   },
   "dependencies": {
     "multer": "^2.0.2"
