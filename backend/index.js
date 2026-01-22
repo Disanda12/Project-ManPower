@@ -19,6 +19,7 @@ app.use(express.json());
 const feedbackRoutes = require('./routes/feedback');
 const profileRoutes = require('./routes/profile');
 const notificationRoutes = require('./routes/notifications');
+const statusRoutes = require('./routes/status');
 
 // Serve static files from the React app build directory
 app.use(express.static(path.join(__dirname, 'public')));
@@ -35,6 +36,7 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/customer-booking', customerbookingRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/notifications', notificationRoutes.router);
+app.use('/api/status', statusRoutes);
 
 // Catch all handler: send back React's index.html file for any non-API routes
 app.use((req, res, next) => {
@@ -45,8 +47,18 @@ app.use((req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5002;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
+  
+  // Test database connection
+  try {
+    const connection = await db.getConnection();
+    console.log('✅ Database connected successfully');
+    connection.release();
+  } catch (error) {
+    console.error('❌ Database connection failed:', error.message);
+  }
+  
   const uploadDir = './uploads/profiles';
   if (!fs.existsSync(uploadDir)){
       fs.mkdirSync(uploadDir, { recursive: true });

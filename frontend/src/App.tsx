@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom'; 
 // 1. Import the Toaster component
 import { Toaster } from 'react-hot-toast';
@@ -26,6 +26,26 @@ import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from './components/utils/ProtectedRoute';
 
 function App() {
+  useEffect(() => {
+    // Check database connection status
+    const checkDatabaseStatus = async () => {
+      try {
+        const response = await fetch('/api/status/db-status');
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+          console.log('✅ Database connected successfully:', data.message);
+        } else {
+          console.error('❌ Database connection failed:', data.message);
+        }
+      } catch (error) {
+        console.error('❌ Failed to check database status:', error);
+      }
+    };
+
+    checkDatabaseStatus();
+  }, []);
+
   return (
     <BrowserRouter>
       <Toaster 
