@@ -38,11 +38,11 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Serve the React app build directory
 app.use(express.static(path.join(__dirname, 'public')));
+
 app.use(cors({
-  origin: ['https://manpower.jaan.lk', 'http://localhost:5002', 'http://localhost:5173'], 
+  origin: ['https://manpower.jaan.lk', 'http://localhost:5173'], // Allow your domain and local dev
   credentials: true
-}));
-// --- 5. Catch-All Handler (Regex Version) ---
+}));// --- 5. Catch-All Handler (Regex Version) ---
 // Using /.*/ as a literal regex is the most bulletproof way to catch all routes
 app.get(/.*/, (req, res) => {
     // If a request starts with /api but didn't match any routes above, return a 404 JSON
