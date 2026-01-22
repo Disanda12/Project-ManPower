@@ -34,24 +34,28 @@ app.use('/api/notifications', notificationRoutes.router);
 app.use('/api/status', statusRoutes);
 
 // --- 4. Static File Serving ---
-// Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Serve the React app build directory
-// Make sure your React "dist" or "build" folder contents are inside this 'public' folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-// --- 5. Catch-All Handler (The "Fix") ---
-// This handles React Router navigation and prevents the 404/JSON error
-app.get('*', (req, res) => {
+// --- 5. Catch-All Handler (Regex Version) ---
+// Using /.*/ as a literal regex is the most bulletproof way to catch all routes
+app.get(/.*/, (req, res) => {
     // If a request starts with /api but didn't match any routes above, return a 404 JSON
     if (req.path.startsWith('/api')) {
         return res.status(404).json({ error: 'API endpoint not found' });
     }
+    
     // For all other requests (navigation), send the React index.html
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    const indexPath = path.join(__dirname, 'public', 'index.html');
+    
+    if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+    } else {
+        res.status(404).send("Frontend build not found in 'public' folder.");
+    }
 });
-
 // --- 6. Server Initialization ---
 const PORT = process.env.PORT || 5000;
 
@@ -71,6 +75,6 @@ app.listen(PORT, async () => {
     const uploadDir = path.join(__dirname, 'uploads', 'profiles');
     if (!fs.existsSync(uploadDir)){
         fs.mkdirSync(uploadDir, { recursive: true });
-        console.log('📂 Verified uploads/profiles directory');
+        console.log('📂 Created uploads/profiles directory');
     }
 });
