@@ -61,10 +61,16 @@ const NavigationBar = () => {
       if (isLoggedIn) {
         try {
           const notifications = await getUserNotifications();
-          const unread = notifications.filter(n => !n.is_read).length;
-          setUnreadNotifications(unread);
+          if (Array.isArray(notifications)) {
+            const unread = notifications.filter(n => !n.is_read).length;
+            setUnreadNotifications(unread);
+          } else {
+            console.error('Notifications response is not an array:', notifications);
+            setUnreadNotifications(0);
+          }
         } catch (error) {
           console.error('Failed to fetch notifications:', error);
+          setUnreadNotifications(0);
         }
       }
     };
