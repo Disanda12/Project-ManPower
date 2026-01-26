@@ -216,12 +216,12 @@ const NavigationBar = () => {
       {/* MOBILE FULLSCREEN MENU */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "tween" }} className="lg:hidden bg-white fixed inset-0 z-40 px-6 py-20 overflow-y-auto">
-             <button className="absolute top-6 right-6 p-2 bg-gray-50 rounded-xl" onClick={() => {setMobileMenuOpen(false); setMobileServicesOpen(false)}}>
+          <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "tween" }} className="lg:hidden bg-white fixed left-0 right-0 top-0 h-screen z-60 overflow-y-auto">
+             <button className="absolute top-4 right-4 p-2 bg-gray-50 rounded-xl" onClick={() => {setMobileMenuOpen(false); setMobileServicesOpen(false)}}>
                 <X size={24} />
              </button>
 
-             <div className="space-y-8">
+             <div className="space-y-8 flex flex-col min-h-full py-20 px-6">
                 {/* 1. Corrected Navigation Links */}
                 <div className="grid grid-cols-2 gap-3">
                     {navItems.map(item => (
