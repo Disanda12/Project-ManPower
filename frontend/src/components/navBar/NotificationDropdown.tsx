@@ -58,7 +58,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isOpen, onC
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="absolute right-0 pt-4 w-96 z-50"
+          className="absolute right-0 pt-4 w-64 sm:w-80 md:w-96 z-50"
         >
           <div className="bg-white border border-gray-100 shadow-2xl rounded-2xl overflow-hidden">
             <div className="p-4 border-b border-gray-100">

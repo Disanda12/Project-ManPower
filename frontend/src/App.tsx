@@ -30,7 +30,7 @@ function App() {
     // Check database connection status
     const checkDatabaseStatus = async () => {
       try {
-        const response = await fetch('/api/status/db-status');
+        const response = await fetch('http://localhost:5002/api/status/db-status');
         const data = await response.json();
         
         if (data.status === 'success') {
